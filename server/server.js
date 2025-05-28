@@ -30,17 +30,29 @@ app.use(cors({
 app.use(express.json());
 
 // Database connection with additional options
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/calendar-app', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  retryWrites: true,
-  w: 'majority'
-})
-.then(() => console.log('Connected to MongoDB'))
-.catch((err) => {
-  console.error('MongoDB connection error:', err);
-  process.exit(1); // Exit if cannot connect to database
-});
+const connectDB = async () => {
+  try {
+    if (!process.env.MONGODB_URI) {
+      throw new Error('MONGODB_URI is not defined in environment variables');
+    }
+
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      retryWrites: true,
+      w: 'majority'
+    });
+    console.log('Connected to MongoDB');
+  } catch (err) {
+    console.error('MongoDB connection error:', err);
+    if (err.name === 'MongoServerError' && err.code === 8000) {
+      console.error('Authentication failed. Please check your MongoDB username and password.');
+    }
+    process.exit(1);
+  }
+};
+
+connectDB();
 
 // API Routes
 app.use('/api/auth', authRoutes);

@@ -158,17 +158,24 @@ function FlappyGame() {
 function UserView() {
   const [slots, setSlots] = useState([]);
   const [currentDate, setCurrentDate] = useState(getNextSunday());
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const fetchSlots = async (date) => {
     try {
+      setIsLoading(true);
+      setError(null);
       const sunday = getNextSunday(date);
       const response = await axios.get(
-        `http://localhost:5000/api/slots/week/${sunday.toISOString()}`
+        `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/slots/week/${sunday.toISOString()}`
       );
       setSlots(response.data);
+      setIsLoading(false);
     } catch (error) {
       console.error('Error fetching slots:', error);
+      setError(error);
+      setIsLoading(false);
     }
   };
 
@@ -200,47 +207,29 @@ function UserView() {
   };
 
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ my: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-          <Button variant="contained" onClick={() => navigate('/')}>Home</Button>
-          <Button variant="contained" onClick={() => navigate('/login')}>Admin</Button>
-        </Box>
-
-        <Typography variant="h4" component="h1" gutterBottom align="center">
-          Thấy cái nào Available thì nghĩa là còn slot đó :3
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <IconButton onClick={handlePreviousWeek} disabled={currentDate <= getNextSunday(new Date(0))}>
+          <ArrowBack />
+        </IconButton>
+        <Typography variant="h4" component="h1" align="center">
+          {formatDate(currentDate)}
         </Typography>
-
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 3 }}>
-          <IconButton onClick={handlePreviousWeek} disabled={currentDate <= getNextSunday(new Date())}>
-            <ArrowBack />
-          </IconButton>
-          <Typography variant="h6" sx={{ mx: 2 }}>
-            {formatDate(currentDate)}
-          </Typography>
-          <IconButton onClick={handleNextWeek}>
-            <ArrowForward />
-          </IconButton>
-        </Box>
-
-        <Calendar slots={slots} isAdmin={false} />
-
-        <Box sx={{ mt: 6, mb: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Typography variant="h6" color="secondary" sx={{ mb: 2 }}>
-            Bực vì mất slot? Chơi game cho thêm bực nè!
-          </Typography>
-          <Paper elevation={4} sx={{ p: 2, bgcolor: '#fffde7', borderRadius: 2 }}>
-            <iframe
-              title="Flappy Bird"
-              src="https://flappybird.io/"
-              width="340"
-              height="510"
-              style={{ border: 'none', borderRadius: 8, background: '#000' }}
-              allow="autoplay"
-            />
-          </Paper>
-        </Box>
+        <IconButton onClick={handleNextWeek}>
+          <ArrowForward />
+        </IconButton>
       </Box>
+
+      <Calendar slots={slots} currentDate={currentDate} />
+
+      <Paper elevation={3} sx={{ p: 3, mt: 4, textAlign: 'center' }}>
+        <Typography variant="h5" gutterBottom>
+          {isLoading || error ? 
+            "Lịch chưa load xong? Nhún nhún con chim tí rồi refresh lại nha" : 
+            "Chờ đợi lâu quá? Chơi Flappy Bird đi!"}
+        </Typography>
+        <FlappyGame />
+      </Paper>
     </Container>
   );
 }

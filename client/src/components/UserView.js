@@ -208,6 +208,11 @@ function UserView() {
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+        <Button variant="contained" onClick={() => navigate('/')}>Home</Button>
+        <Button variant="contained" onClick={() => navigate('/login')}>Admin</Button>
+      </Box>
+
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <IconButton onClick={handlePreviousWeek} disabled={currentDate <= getNextSunday(new Date(0))}>
           <ArrowBack />
@@ -226,9 +231,18 @@ function UserView() {
         <Typography variant="h5" gutterBottom>
           {isLoading || error ? 
             "Lịch chưa load xong? Nhún nhún con chim tí rồi refresh lại nha" : 
-            "Chờ đợi lâu quá? Chơi Flappy Bird đi!"}
+            "Bực mình vì mất slot? Nhún chim đi cho nó bực thêm"}
         </Typography>
-        <FlappyGame />
+        <Box sx={{ mt: 2, mb: 4 }}>
+          <iframe
+            title="Flappy Bird"
+            src="https://flappybird.io/"
+            width="340"
+            height="510"
+            style={{ border: 'none', borderRadius: 8, background: '#000' }}
+            allow="autoplay"
+          />
+        </Box>
       </Paper>
     </Container>
   );

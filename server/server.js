@@ -2,7 +2,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const path = require('path');
 const authRoutes = require('./routes/auth');
 const slotRoutes = require('./routes/slots');
 
@@ -13,7 +12,7 @@ const app = express();
 // CORS configuration
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://your-vercel-domain.vercel.app', // Replace with your actual Vercel domain
+  'https://calendar-app-two-lovat.vercel.app',  // Remove trailing slash
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
@@ -38,15 +37,6 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/calendar-
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/slots', slotRoutes);
-
-// Serve static files in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/build')));
-  
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
-  });
-}
 
 // Error handling middleware
 app.use((err, req, res, next) => {

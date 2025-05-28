@@ -233,15 +233,19 @@ function UserView() {
             "Lịch chưa load xong? Nhún nhún con chim tí rồi refresh lại nha" : 
             "Bực mình vì mất slot? Nhún chim đi cho nó bực thêm"}
         </Typography>
-        <Box sx={{ mt: 2, mb: 4 }}>
-          <iframe
-            title="Flappy Bird"
-            src="https://flappybird.io/"
-            width="340"
-            height="510"
-            style={{ border: 'none', borderRadius: 8, background: '#000' }}
-            allow="autoplay"
-          />
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 2, mb: 4 }}>
+          <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+            <Box sx={{ width: { xs: '100%', sm: '400px' }, maxWidth: '100%', aspectRatio: '3/4', boxShadow: 3, borderRadius: 2, overflow: 'hidden' }}>
+              <iframe
+                src="https://flappybird.io/"
+                title="Flappy Bird"
+                width="100%"
+                height="500"
+                style={{ border: 'none', display: 'block', width: '100%' }}
+                allow="autoplay; fullscreen"
+              />
+            </Box>
+          </Box>
         </Box>
       </Paper>
     </Container>

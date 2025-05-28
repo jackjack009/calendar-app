@@ -55,7 +55,7 @@ function Calendar({ slots, onSlotClick, isAdmin, currentDate }) {
           </Typography>
           <Grid container spacing={2}>
             {slotsByDate[dateKey].map((slot) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={slot._id}>
+              <Grid item xs={6} sm={6} md={4} lg={3} key={slot._id}>
                 <Paper
                   elevation={2}
                   sx={{

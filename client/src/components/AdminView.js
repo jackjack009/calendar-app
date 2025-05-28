@@ -14,6 +14,8 @@ import axios from 'axios';
 import Calendar from './Calendar';
 import { useAuth } from '../contexts/AuthContext';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 function getNextSunday(date = new Date()) {
   const d = new Date(date);
   const day = d.getDay();
@@ -43,7 +45,7 @@ function AdminView() {
     try {
       const sunday = getNextSunday(date);
       const response = await axios.get(
-        `http://localhost:5000/api/slots/week/${sunday.toISOString()}`,
+        `${API_URL}/api/slots/week/${sunday.toISOString()}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -67,7 +69,7 @@ function AdminView() {
   const handleSlotClick = async (slot) => {
     try {
       const response = await axios.patch(
-        `http://localhost:5000/api/slots/${slot._id}`,
+        `${API_URL}/api/slots/${slot._id}`,
         {},
         {
           headers: {
@@ -135,7 +137,7 @@ function AdminView() {
         </Typography>
 
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 3 }}>
-          <IconButton onClick={handlePreviousWeek} disabled={currentDate <= getNextSunday(new Date())}>
+          <IconButton onClick={handlePreviousWeek} disabled={currentDate <= getNextSunday(new Date(0))}>
             <ArrowBack />
           </IconButton>
           <Typography variant="h6" sx={{ mx: 2 }}>
@@ -146,7 +148,12 @@ function AdminView() {
           </IconButton>
         </Box>
 
-        <Calendar slots={slots} onSlotClick={handleSlotClick} isAdmin={true} />
+        <Calendar 
+          slots={slots} 
+          currentDate={currentDate}
+          onSlotClick={handleSlotClick} 
+          isAdmin={true} 
+        />
 
         <Snackbar
           open={notification.open}

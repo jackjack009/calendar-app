@@ -46,19 +46,16 @@ const connectDB = async () => {
     });
     console.log('Connected to MongoDB');
 
-    // Create admin user if it doesn't exist
-    const adminExists = await User.findOne({ username: 'admin' });
+    // Check for admin user and create if not exists
+    const adminExists = await User.findOne({ username: 'jackjack' });
     if (!adminExists) {
-      console.log('Creating admin user...');
-      const adminUser = new User({
-        username: 'admin',
-        password: 'admin123',
+      const admin = new User({
+        username: 'jackjack',
+        password: 'Idontknow!',
         isAdmin: true
       });
-      await adminUser.save();
+      await admin.save();
       console.log('Admin user created successfully');
-    } else {
-      console.log('Admin user already exists');
     }
   } catch (err) {
     console.error('MongoDB connection error:', err);

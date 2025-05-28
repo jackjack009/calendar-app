@@ -7,14 +7,21 @@ const User = require('../models/User');
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
+    console.log('Login attempt for username:', username);
+
     const user = await User.findOne({ username });
+    console.log('User found:', user ? 'Yes' : 'No');
 
     if (!user) {
+      console.log('No user found with username:', username);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     const isMatch = await user.comparePassword(password);
+    console.log('Password match:', isMatch ? 'Yes' : 'No');
+
     if (!isMatch) {
+      console.log('Password mismatch for user:', username);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
@@ -24,6 +31,7 @@ router.post('/login', async (req, res) => {
       { expiresIn: '24h' }
     );
 
+    console.log('Login successful for user:', username);
     res.json({
       token,
       user: {
@@ -33,7 +41,8 @@ router.post('/login', async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 

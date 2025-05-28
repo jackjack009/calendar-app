@@ -2,8 +2,10 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 const authRoutes = require('./routes/auth');
 const slotRoutes = require('./routes/slots');
+const User = require('./models/User');
 
 dotenv.config();
 
@@ -43,6 +45,21 @@ const connectDB = async () => {
       w: 'majority'
     });
     console.log('Connected to MongoDB');
+
+    // Create admin user if it doesn't exist
+    const adminExists = await User.findOne({ username: 'admin' });
+    if (!adminExists) {
+      console.log('Creating admin user...');
+      const adminUser = new User({
+        username: 'admin',
+        password: 'admin123',
+        isAdmin: true
+      });
+      await adminUser.save();
+      console.log('Admin user created successfully');
+    } else {
+      console.log('Admin user already exists');
+    }
   } catch (err) {
     console.error('MongoDB connection error:', err);
     if (err.name === 'MongoServerError' && err.code === 8000) {

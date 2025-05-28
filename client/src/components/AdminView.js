@@ -120,6 +120,9 @@ function AdminView() {
     setNotification({ ...notification, open: false });
   };
 
+  // Helper to check if previous week is allowed
+  const isPreviousWeekDisabled = currentDate <= getNextSunday(new Date());
+
   return (
     <Container maxWidth="lg">
       <Box sx={{ my: 4 }}>
@@ -137,7 +140,7 @@ function AdminView() {
         </Typography>
 
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 3 }}>
-          <IconButton onClick={handlePreviousWeek} disabled={currentDate <= getNextSunday(new Date(0))}>
+          <IconButton onClick={handlePreviousWeek} disabled={isPreviousWeekDisabled}>
             <ArrowBack />
           </IconButton>
           <Typography variant="h6" sx={{ mx: 2 }}>

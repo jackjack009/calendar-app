@@ -50,9 +50,6 @@ function Calendar({ slots, onSlotClick, isAdmin, currentDate }) {
     <Box>
       {sortedDates.map((dateKey) => (
         <Box key={dateKey} sx={{ mb: 4 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            {formatDate(new Date(dateKey))}
-          </Typography>
           <Grid container spacing={2}>
             {slotsByDate[dateKey].map((slot) => (
               <Grid item xs={6} sm={6} md={4} lg={3} key={slot._id}>

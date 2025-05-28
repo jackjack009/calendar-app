@@ -206,6 +206,9 @@ function UserView() {
     });
   };
 
+  // Helper to check if previous week is allowed
+  const isPreviousWeekDisabled = currentDate <= getNextSunday(new Date());
+
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
@@ -214,7 +217,7 @@ function UserView() {
       </Box>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <IconButton onClick={handlePreviousWeek} disabled={currentDate <= getNextSunday(new Date(0))}>
+        <IconButton onClick={handlePreviousWeek} disabled={isPreviousWeekDisabled}>
           <ArrowBack />
         </IconButton>
         <Typography variant="h4" component="h1" align="center">

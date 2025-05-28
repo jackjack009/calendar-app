@@ -6,9 +6,12 @@ async function initAdmin() {
   try {
     await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/calendar-app');
     
+    // First, remove any existing admin user
+    await User.deleteOne({ username: 'admin' });
+    
     const adminUser = new User({
-      username: 'jackjack',
-      password: 'Idontknow0!',
+      username: 'admin',
+      password: 'admin123',
       isAdmin: true
     });
 

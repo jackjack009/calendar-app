@@ -233,7 +233,7 @@ function UserView() {
       <Paper elevation={3} sx={{ p: 3, mt: 4, textAlign: 'center' }}>
         <Typography variant="h5" gutterBottom>
           {isLoading || error ? 
-            "Lịch chưa load xong? Nhún nhún con chim tí rồi refresh lại nha" : 
+            "Lịch chưa load xong? Nhún nhún con chim tí rồi đợi nó refresh lại nha" : 
             "Bực mình vì mất slot? Nhún chim đi cho nó bực thêm"}
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 2, mb: 4 }}>

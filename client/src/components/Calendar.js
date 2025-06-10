@@ -38,7 +38,10 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
 
   const generateSundays = () => {
     const today = new Date();
-    const nearestSunday = getNearestSunday(today);
+    // Find the next Sunday (not Saturday)
+    const nearestSunday = new Date(today);
+    nearestSunday.setDate(today.getDate() + ((7 - today.getDay()) % 7));
+    nearestSunday.setHours(0, 0, 0, 0);
     const sundays = [];
     for (let i = 0; i < 20; i++) {
       const nextSunday = new Date(nearestSunday);

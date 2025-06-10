@@ -157,7 +157,7 @@ function FlappyGame() {
   );
 }
 
-function UserView({ dateTitles, refreshDateTitles }) {
+function UserView({ dateTitles, refreshDateTitles, isLoadingDateTitles }) {
   const [slots, setSlots] = useState([]);
   const [currentDate, setCurrentDate] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -239,8 +239,6 @@ function UserView({ dateTitles, refreshDateTitles }) {
   // Helper to check if previous week is allowed
   const isPreviousWeekDisabled = new Date(currentDate) <= getNextSunday(new Date());
 
-  // ... existing code ...
-
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
@@ -252,27 +250,26 @@ function UserView({ dateTitles, refreshDateTitles }) {
         Lịch để check coi Jack ế show đến đâu. Muốn búc thì nhắm cái nào Available nghen. Iu thương~
       </Typography>
 
-      <Calendar
-        slots={slots}
-        dateTitles={dateTitles}
-        onDateTitleUpdate={refreshDateTitles}
-        onDateSelect={handleDateSelect}
-        selectedDate={currentDate}
-        onSundaysGenerated={setGeneratedSundays}
-      />
-
-      {isLoading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 200 }}>
-          <Typography variant="h6">Loading slots...</Typography>
+      {(isLoading || isLoadingDateTitles || error) ? (
+        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: 200, my: 4 }}>
+          {error ? (
+            <Typography variant="h6" color="error">Error: {error.message || "Failed to load data."}</Typography>
+          ) : (
+            <Typography variant="h6">Loading calendar data...</Typography>
+          )}
         </Box>
-      )}
-      {error && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 200 }}>
-          <Typography variant="h6" color="error">Error: {error.message}</Typography>
-        </Box>
+      ) : (
+        <Calendar
+          slots={slots}
+          dateTitles={dateTitles}
+          onDateTitleUpdate={refreshDateTitles}
+          onDateSelect={handleDateSelect}
+          selectedDate={currentDate}
+          onSundaysGenerated={setGeneratedSundays}
+        />
       )}
 
-      <Paper elevation={3} sx={{ p: 3, mt: 4, textAlign: 'center' }}>
+      <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
         <Typography variant="h5" gutterBottom>
           {isLoading || error ?
             "Lịch chưa load xong? Nhún nhún con chim tí rồi đợi nó refresh lại nha" :

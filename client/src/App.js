@@ -23,6 +23,7 @@ const theme = createTheme({
 
 function App() {
   const [dateTitles, setDateTitles] = useState({});
+  const [isLoadingDateTitles, setIsLoadingDateTitles] = useState(true);
 
   const fetchDateTitles = useCallback(async () => {
     const maxRetries = 5;
@@ -30,12 +31,14 @@ function App() {
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
+        setIsLoadingDateTitles(true);
         const response = await axios.get(`${API_URL}/api/date-titles`);
         const titlesMap = response.data.reduce((acc, item) => {
           acc[item.date] = item.title;
           return acc;
         }, {});
         setDateTitles(titlesMap);
+        setIsLoadingDateTitles(false);
         return; // Success, exit the function
       } catch (error) {
         console.error(`Error fetching date titles (attempt ${attempt + 1}/${maxRetries}):`, error);
@@ -43,6 +46,7 @@ function App() {
         if (attempt === maxRetries - 1) {
           // Last attempt failed
           console.error('All retry attempts failed');
+          setIsLoadingDateTitles(false);
           return;
         }
 
@@ -63,8 +67,8 @@ function App() {
       <AuthProvider>
         <Router>
           <Routes>
-            <Route path="/" element={<UserView dateTitles={dateTitles} refreshDateTitles={fetchDateTitles} />} />
-            <Route path="/admin" element={<AdminView dateTitles={dateTitles} refreshDateTitles={fetchDateTitles} />} />
+            <Route path="/" element={<UserView dateTitles={dateTitles} refreshDateTitles={fetchDateTitles} isLoadingDateTitles={isLoadingDateTitles} />} />
+            <Route path="/admin" element={<AdminView dateTitles={dateTitles} refreshDateTitles={fetchDateTitles} isLoadingDateTitles={isLoadingDateTitles} />} />
             <Route path="/login" element={<Login />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

@@ -28,7 +28,7 @@ function getNextSunday(date = new Date()) {
   return d;
 }
 
-function AdminView({ dateTitles, refreshDateTitles }) {
+function AdminView({ dateTitles, refreshDateTitles, isLoadingDateTitles }) {
   const [slots, setSlots] = useState([]);
   const [currentDate, setCurrentDate] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -178,26 +178,25 @@ function AdminView({ dateTitles, refreshDateTitles }) {
           Lịch để check coi Jack ế show đến đâu. Muốn búc thì nhắm cái nào Available nghen. Iu thương~
         </Typography>
 
-        <Calendar 
-          slots={slots} 
-          dateTitles={dateTitles}
-          onSlotClick={handleSlotClick} 
-          isAdmin={true} 
-          onDateTitleUpdate={refreshDateTitles}
-          onDateSelect={handleDateSelect}
-          selectedDate={currentDate}
-          onSundaysGenerated={setGeneratedSundays}
-        />
-
-        {isLoading && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 200 }}>
-            <Typography variant="h6">Loading slots...</Typography>
+        {(isLoading || isLoadingDateTitles || error) ? (
+          <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: 200, my: 4 }}>
+            {error ? (
+              <Typography variant="h6" color="error">Error: {error.message || "Failed to load data."}</Typography>
+            ) : (
+              <Typography variant="h6">Loading calendar data...</Typography>
+            )}
           </Box>
-        )}
-        {error && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 200 }}>
-            <Typography variant="h6" color="error">Error: {error.message}</Typography>
-          </Box>
+        ) : (
+          <Calendar 
+            slots={slots} 
+            dateTitles={dateTitles}
+            onSlotClick={handleSlotClick} 
+            isAdmin={true} 
+            onDateTitleUpdate={refreshDateTitles}
+            onDateSelect={handleDateSelect}
+            selectedDate={currentDate}
+            onSundaysGenerated={setGeneratedSundays}
+          />
         )}
 
         <Snackbar

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -24,7 +24,7 @@ const theme = createTheme({
 function App() {
   const [dateTitles, setDateTitles] = useState({});
 
-  const fetchDateTitles = async () => {
+  const fetchDateTitles = useCallback(async () => {
     try {
       const response = await axios.get(`${API_URL}/api/date-titles`);
       const titlesMap = response.data.reduce((acc, item) => {
@@ -35,11 +35,11 @@ function App() {
     } catch (error) {
       console.error('Error fetching date titles:', error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchDateTitles();
-  }, []);
+  }, [fetchDateTitles]);
 
   return (
     <ThemeProvider theme={theme}>

@@ -5,6 +5,8 @@ const dotenv = require('dotenv');
 const path = require('path');
 const authRoutes = require('./routes/auth');
 const slotRoutes = require('./routes/slots');
+const dateTitleRoutes = require('./routes/dateTitles');
+const deletedDateRoutes = require('./routes/deletedDates');
 const User = require('./models/User');
 
 dotenv.config();
@@ -75,6 +77,8 @@ connectDB();
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/slots', slotRoutes);
+app.use('/api/date-titles', dateTitleRoutes);
+app.use('/api/deleted-dates', deletedDateRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

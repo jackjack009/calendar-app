@@ -12,6 +12,8 @@ import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import axios from 'axios';
 import Calendar from './Calendar';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 function getNextSunday(date = new Date()) {
   const d = new Date(date);
   const day = d.getDay();
@@ -155,7 +157,7 @@ function FlappyGame() {
   );
 }
 
-function UserView() {
+function UserView({ dateTitles, refreshDateTitles }) {
   const [slots, setSlots] = useState([]);
   const [currentDate, setCurrentDate] = useState(getNextSunday());
   const [isLoading, setIsLoading] = useState(true);
@@ -168,7 +170,7 @@ function UserView() {
       setError(null);
       const sunday = getNextSunday(date);
       const response = await axios.get(
-        `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/slots/week/${sunday.toISOString()}`
+        `${API_URL}/api/slots/week/${sunday.toISOString()}`
       );
       setSlots(response.data);
       setIsLoading(false);
@@ -182,6 +184,10 @@ function UserView() {
   useEffect(() => {
     fetchSlots(currentDate);
   }, [currentDate]);
+
+  const handleDateSelect = (dateKey) => {
+    setCurrentDate(new Date(dateKey));
+  };
 
   const handlePreviousWeek = () => {
     const newDate = new Date(currentDate);
@@ -216,38 +222,33 @@ function UserView() {
         <Button variant="contained" onClick={() => navigate('/login')}>Admin</Button>
       </Box>
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <IconButton onClick={handlePreviousWeek} disabled={isPreviousWeekDisabled}>
-          <ArrowBack />
-        </IconButton>
-        <Typography variant="h4" component="h1" align="center">
-          {formatDate(currentDate)}
-        </Typography>
-        <IconButton onClick={handleNextWeek}>
-          <ArrowForward />
-        </IconButton>
-      </Box>
+      <Typography variant="h4" component="h1" align="center" sx={{ mb: 3 }}>
+        Lịch để check coi Jack ế show đến đâu. Muốn búc thì nhắm cái nào Available nghen. Iu thương~
+      </Typography>
 
-      <Calendar slots={slots} currentDate={currentDate} />
+      <Calendar 
+        slots={slots} 
+        dateTitles={dateTitles} 
+        onDateTitleUpdate={refreshDateTitles} 
+        onDateSelect={handleDateSelect}
+      />
 
       <Paper elevation={3} sx={{ p: 3, mt: 4, textAlign: 'center' }}>
         <Typography variant="h5" gutterBottom>
           {isLoading || error ? 
-            "Lịch chưa load xong? Nhún nhún con chim tí rồi refresh lại nha" : 
+            "Lịch chưa load xong? Nhún nhún con chim tí rồi đợi nó refresh lại nha" : 
             "Bực mình vì mất slot? Nhún chim đi cho nó bực thêm"}
         </Typography>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 2, mb: 4 }}>
-          <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-            <Box sx={{ width: { xs: '100%', sm: '400px' }, maxWidth: '100%', aspectRatio: '3/4', boxShadow: 3, borderRadius: 2, overflow: 'hidden' }}>
-              <iframe
-                src="https://flappybird.io/"
-                title="Flappy Bird"
-                width="100%"
-                height="500"
-                style={{ border: 'none', display: 'block', width: '100%' }}
-                allow="autoplay; fullscreen"
-              />
-            </Box>
+        <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+          <Box sx={{ width: { xs: '100%', sm: '400px' }, maxWidth: '100%', aspectRatio: '3/4', boxShadow: 3, borderRadius: 2, overflow: 'hidden' }}>
+            <iframe
+              src="https://flappybird.io/"
+              title="Flappy Bird"
+              width="100%"
+              height="500"
+              style={{ border: 'none', display: 'block', width: '100%' }}
+              allow="autoplay; fullscreen"
+            />
           </Box>
         </Box>
       </Paper>

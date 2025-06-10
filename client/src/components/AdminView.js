@@ -28,7 +28,7 @@ function getNextSunday(date = new Date()) {
   return d;
 }
 
-function AdminView() {
+function AdminView({ dateTitles, refreshDateTitles }) {
   const [slots, setSlots] = useState([]);
   const [currentDate, setCurrentDate] = useState(getNextSunday());
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
@@ -65,6 +65,10 @@ function AdminView() {
   useEffect(() => {
     fetchSlots(currentDate);
   }, [currentDate]);
+
+  const handleDateSelect = (dateKey) => {
+    setCurrentDate(new Date(dateKey));
+  };
 
   const handleSlotClick = async (slot) => {
     try {
@@ -139,23 +143,17 @@ function AdminView() {
           Manage Time Slots
         </Typography>
 
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 3 }}>
-          <IconButton onClick={handlePreviousWeek} disabled={isPreviousWeekDisabled}>
-            <ArrowBack />
-          </IconButton>
-          <Typography variant="h6" sx={{ mx: 2 }}>
-            {formatDate(currentDate)}
-          </Typography>
-          <IconButton onClick={handleNextWeek}>
-            <ArrowForward />
-          </IconButton>
-        </Box>
+        <Typography variant="h4" component="h1" align="center" sx={{ mb: 3 }}>
+          Lịch để check coi Jack ế show đến đâu. Muốn búc thì nhắm cái nào Available nghen. Iu thương~
+        </Typography>
 
         <Calendar 
           slots={slots} 
-          currentDate={currentDate}
+          dateTitles={dateTitles}
           onSlotClick={handleSlotClick} 
           isAdmin={true} 
+          onDateTitleUpdate={refreshDateTitles}
+          onDateSelect={handleDateSelect}
         />
 
         <Snackbar

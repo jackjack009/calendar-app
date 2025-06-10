@@ -30,8 +30,6 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
   const [editedTitle, setEditedTitle] = useState('');
   const [deletedDates, setDeletedDates] = useState([]);
 
-  console.log('Calendar Rendered: selectedDate prop =', selectedDate);
-
   const getNearestSunday = (date) => {
     const result = new Date(date);
     result.setDate(date.getDate() + (0 + 7 - date.getDay()) % 7);
@@ -51,11 +49,9 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
   };
 
   const sundayDates = generateSundays();
-  console.log('Calendar: Generated Sunday Dates =', sundayDates);
 
   useEffect(() => {
     if (onSundaysGenerated) {
-      console.log('Calendar: Calling onSundaysGenerated with Sundays:', sundayDates);
       onSundaysGenerated(sundayDates);
     }
   }, [sundayDates, onSundaysGenerated]);
@@ -106,7 +102,6 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
   const sortedDates = sundayDates;
 
   const handleDateClick = (dateKey) => {
-    console.log('Calendar: Date clicked =', dateKey);
     if (onDateSelect) {
       onDateSelect(dateKey);
     }

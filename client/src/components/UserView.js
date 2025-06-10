@@ -191,10 +191,8 @@ function UserView({ dateTitles, refreshDateTitles }) {
 
   // Effect to set initial date based on generated Sundays
   useEffect(() => {
-    console.log('UserView: useEffect for generatedSundays - currentDate:', currentDate, 'generatedSundays:', generatedSundays);
     if (!currentDate && generatedSundays.length > 0) {
       setCurrentDate(generatedSundays[0]);
-      console.log('UserView: Setting initial currentDate to:', generatedSundays[0]);
     }
   }, [currentDate, generatedSundays]);
 

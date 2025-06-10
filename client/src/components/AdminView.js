@@ -72,8 +72,10 @@ function AdminView({ dateTitles, refreshDateTitles }) {
   };
 
   useEffect(() => {
-    fetchSlots(currentDate);
-    refreshDateTitles();
+    if (currentDate) {
+      fetchSlots(currentDate);
+      refreshDateTitles();
+    }
   }, [currentDate, refreshDateTitles]);
 
   // Effect to set initial date based on generated Sundays

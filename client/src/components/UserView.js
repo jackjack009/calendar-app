@@ -184,7 +184,9 @@ function UserView({ dateTitles, refreshDateTitles }) {
   };
 
   useEffect(() => {
-    fetchSlots(currentDate);
+    if (currentDate) {
+      fetchSlots(currentDate);
+    }
   }, [currentDate]);
 
   // Effect to set initial date based on generated Sundays

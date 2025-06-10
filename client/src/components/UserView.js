@@ -237,29 +237,30 @@ function UserView({ dateTitles, refreshDateTitles }) {
         Lịch để check coi Jack ế show đến đâu. Muốn búc thì nhắm cái nào Available nghen. Iu thương~
       </Typography>
 
-      {isLoading ? (
+      <Calendar
+        slots={slots}
+        dateTitles={dateTitles}
+        onDateTitleUpdate={refreshDateTitles}
+        onDateSelect={handleDateSelect}
+        selectedDate={currentDate}
+        onSundaysGenerated={setGeneratedSundays}
+      />
+
+      {isLoading && (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 200 }}>
           <Typography variant="h6">Loading slots...</Typography>
         </Box>
-      ) : error ? (
+      )}
+      {error && (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 200 }}>
           <Typography variant="h6" color="error">Error: {error.message}</Typography>
         </Box>
-      ) : (
-        <Calendar 
-          slots={slots} 
-          dateTitles={dateTitles} 
-          onDateTitleUpdate={refreshDateTitles} 
-          onDateSelect={handleDateSelect}
-          selectedDate={currentDate}
-          onSundaysGenerated={setGeneratedSundays}
-        />
       )}
 
       <Paper elevation={3} sx={{ p: 3, mt: 4, textAlign: 'center' }}>
         <Typography variant="h5" gutterBottom>
-          {isLoading || error ? 
-            "Lịch chưa load xong? Nhún nhún con chim tí rồi đợi nó refresh lại nha" : 
+          {isLoading || error ?
+            "Lịch chưa load xong? Nhún nhún con chim tí rồi đợi nó refresh lại nha" :
             "Bực mình vì mất slot? Nhún chim đi cho nó bực thêm"}
         </Typography>
         <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>

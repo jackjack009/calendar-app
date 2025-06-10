@@ -165,25 +165,26 @@ function AdminView({ dateTitles, refreshDateTitles }) {
           Lịch để check coi Jack ế show đến đâu. Muốn búc thì nhắm cái nào Available nghen. Iu thương~
         </Typography>
 
-        {isLoading ? (
+        <Calendar 
+          slots={slots} 
+          dateTitles={dateTitles}
+          onSlotClick={handleSlotClick} 
+          isAdmin={true} 
+          onDateTitleUpdate={refreshDateTitles}
+          onDateSelect={handleDateSelect}
+          selectedDate={currentDate}
+          onSundaysGenerated={setGeneratedSundays}
+        />
+
+        {isLoading && (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 200 }}>
             <Typography variant="h6">Loading slots...</Typography>
           </Box>
-        ) : error ? (
+        )}
+        {error && (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 200 }}>
             <Typography variant="h6" color="error">Error: {error.message}</Typography>
           </Box>
-        ) : (
-          <Calendar 
-            slots={slots} 
-            dateTitles={dateTitles}
-            onSlotClick={handleSlotClick} 
-            isAdmin={true} 
-            onDateTitleUpdate={refreshDateTitles}
-            onDateSelect={handleDateSelect}
-            selectedDate={currentDate}
-            onSundaysGenerated={setGeneratedSundays}
-          />
         )}
 
         <Snackbar

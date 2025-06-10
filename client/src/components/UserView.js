@@ -226,6 +226,8 @@ function UserView({ dateTitles, refreshDateTitles }) {
   // Helper to check if previous week is allowed
   const isPreviousWeekDisabled = new Date(currentDate) <= getNextSunday(new Date());
 
+  // ... existing code ...
+
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
@@ -280,4 +282,4 @@ function UserView({ dateTitles, refreshDateTitles }) {
   );
 }
 
-export default UserView; 
+export default UserView;

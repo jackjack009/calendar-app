@@ -51,6 +51,7 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
   const sundayDates = generateSundays();
 
   useEffect(() => {
+    console.log('Calendar: calling onSundaysGenerated with', sundayDates);
     if (onSundaysGenerated) {
       onSundaysGenerated(sundayDates);
     }

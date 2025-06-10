@@ -199,17 +199,29 @@ function UserView({ dateTitles, refreshDateTitles, isLoadingDateTitles }) {
   };
 
   useEffect(() => {
+    console.log('generatedSundays:', generatedSundays);
+    console.log('currentDate:', currentDate);
+    if (!currentDate && generatedSundays.length > 0) {
+      setCurrentDate(generatedSundays[0]);
+    }
+    // Fallback: if generatedSundays is empty after 5 seconds, stop loading
+    if (generatedSundays.length === 0) {
+      const timeout = setTimeout(() => {
+        if (isLoading) {
+          setIsLoading(false);
+          setError(new Error('No Sundays generated.'));
+        }
+      }, 5000);
+      return () => clearTimeout(timeout);
+    }
+  }, [currentDate, generatedSundays]);
+
+  useEffect(() => {
+    console.log('currentDate changed:', currentDate);
     if (currentDate) {
       fetchSlots(currentDate);
     }
   }, [currentDate]);
-
-  // Effect to set initial date based on generated Sundays
-  useEffect(() => {
-    if (!currentDate && generatedSundays.length > 0) {
-      setCurrentDate(generatedSundays[0]);
-    }
-  }, [currentDate, generatedSundays]);
 
   const handleDateSelect = (dateKey) => {
     setCurrentDate(dateKey);

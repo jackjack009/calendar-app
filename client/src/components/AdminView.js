@@ -30,7 +30,7 @@ function getNextSunday(date = new Date()) {
 
 function AdminView({ dateTitles, refreshDateTitles }) {
   const [slots, setSlots] = useState([]);
-  const [currentDate, setCurrentDate] = useState(getNextSunday());
+  const [currentDate, setCurrentDate] = useState(getNextSunday(new Date()).toISOString().split('T')[0]);
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -41,11 +41,10 @@ function AdminView({ dateTitles, refreshDateTitles }) {
     }
   }, [user, navigate]);
 
-  const fetchSlots = async (date) => {
+  const fetchSlots = async (dateString) => {
     try {
-      const sunday = getNextSunday(date);
       const response = await axios.get(
-        `${API_URL}/api/slots/week/${sunday.toISOString()}`,
+        `${API_URL}/api/slots/week/${dateString}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -64,10 +63,11 @@ function AdminView({ dateTitles, refreshDateTitles }) {
 
   useEffect(() => {
     fetchSlots(currentDate);
-  }, [currentDate]);
+    refreshDateTitles();
+  }, [currentDate, refreshDateTitles]);
 
   const handleDateSelect = (dateKey) => {
-    setCurrentDate(new Date(dateKey));
+    setCurrentDate(dateKey);
   };
 
   const handleSlotClick = async (slot) => {
@@ -100,15 +100,13 @@ function AdminView({ dateTitles, refreshDateTitles }) {
   const handlePreviousWeek = () => {
     const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() - 7);
-    if (newDate >= getNextSunday(new Date(0))) {
-      setCurrentDate(getNextSunday(newDate));
-    }
+    setCurrentDate(getNextSunday(newDate).toISOString().split('T')[0]);
   };
 
   const handleNextWeek = () => {
     const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() + 7);
-    setCurrentDate(getNextSunday(newDate));
+    setCurrentDate(getNextSunday(newDate).toISOString().split('T')[0]);
   };
 
   const formatDate = (date) => {
@@ -124,8 +122,7 @@ function AdminView({ dateTitles, refreshDateTitles }) {
     setNotification({ ...notification, open: false });
   };
 
-  // Helper to check if previous week is allowed
-  const isPreviousWeekDisabled = currentDate <= getNextSunday(new Date());
+  const isPreviousWeekDisabled = new Date(currentDate) <= getNextSunday(new Date());
 
   return (
     <Container maxWidth="lg">

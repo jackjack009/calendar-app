@@ -159,18 +159,17 @@ function FlappyGame() {
 
 function UserView({ dateTitles, refreshDateTitles }) {
   const [slots, setSlots] = useState([]);
-  const [currentDate, setCurrentDate] = useState(getNextSunday());
+  const [currentDate, setCurrentDate] = useState(getNextSunday(new Date()).toISOString().split('T')[0]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const fetchSlots = async (date) => {
+  const fetchSlots = async (dateString) => {
     try {
       setIsLoading(true);
       setError(null);
-      const sunday = getNextSunday(date);
       const response = await axios.get(
-        `${API_URL}/api/slots/week/${sunday.toISOString()}`
+        `${API_URL}/api/slots/week/${dateString}`
       );
       setSlots(response.data);
       setIsLoading(false);
@@ -186,21 +185,19 @@ function UserView({ dateTitles, refreshDateTitles }) {
   }, [currentDate]);
 
   const handleDateSelect = (dateKey) => {
-    setCurrentDate(new Date(dateKey));
+    setCurrentDate(dateKey);
   };
 
   const handlePreviousWeek = () => {
     const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() - 7);
-    if (newDate >= getNextSunday(new Date(0))) {
-      setCurrentDate(getNextSunday(newDate));
-    }
+    setCurrentDate(getNextSunday(newDate).toISOString().split('T')[0]);
   };
 
   const handleNextWeek = () => {
     const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() + 7);
-    setCurrentDate(getNextSunday(newDate));
+    setCurrentDate(getNextSunday(newDate).toISOString().split('T')[0]);
   };
 
   const formatDate = (date) => {
@@ -213,7 +210,7 @@ function UserView({ dateTitles, refreshDateTitles }) {
   };
 
   // Helper to check if previous week is allowed
-  const isPreviousWeekDisabled = currentDate <= getNextSunday(new Date());
+  const isPreviousWeekDisabled = new Date(currentDate) <= getNextSunday(new Date());
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>

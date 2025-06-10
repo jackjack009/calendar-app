@@ -7,7 +7,9 @@ const { auth, isAdmin } = require('./auth');
 router.get('/', async (req, res) => {
   try {
     console.log('Backend: Received request for date titles.');
+    console.log('Backend: Attempting to find date titles...');
     const dateTitles = await DateTitle.find();
+    console.log('Backend: Found', dateTitles.length, 'date titles.');
     res.json(dateTitles);
   } catch (err) {
     console.error(err.message);

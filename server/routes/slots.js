@@ -14,15 +14,18 @@ router.get('/week/:date', async (req, res) => {
     sunday.setHours(0, 0, 0, 0);
 
     // Find all slots for this Sunday
+    console.log('Backend: Attempting to find existing slots for:', sunday.toISOString().split('T')[0]);
     let slots = await TimeSlot.find({
       date: {
         $gte: sunday,
         $lt: new Date(sunday.getTime() + 24 * 60 * 60 * 1000)
       }
     }).sort({ hour: 1, slotNumber: 1 });
+    console.log('Backend: Found', slots.length, 'existing slots for', sunday.toISOString().split('T')[0]);
 
     // If slots don't exist, create them
     if (slots.length === 0) {
+      console.log('Backend: Initializing new slots for:', sunday.toISOString().split('T')[0]);
       const newSlots = [];
       for (let hour = 10; hour <= 17; hour++) {
         for (let slotNumber = 0; slotNumber < 4; slotNumber++) {
@@ -36,18 +39,23 @@ router.get('/week/:date', async (req, res) => {
           });
         }
       }
+      console.log('Backend: Attempting to insert new slots.');
       await TimeSlot.insertMany(newSlots);
+      console.log('Backend: New slots inserted.');
       // Fetch again to return with _id fields
+      console.log('Backend: Re-fetching newly inserted slots.');
       slots = await TimeSlot.find({
         date: {
           $gte: sunday,
           $lt: new Date(sunday.getTime() + 24 * 60 * 60 * 1000)
         }
       }).sort({ hour: 1, slotNumber: 1 });
+      console.log('Backend: Newly initialized slots retrieved:', slots.length);
     }
 
     res.json(slots);
   } catch (error) {
+    console.error('Backend: Server error fetching/initializing slots:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

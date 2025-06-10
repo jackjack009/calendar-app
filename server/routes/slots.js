@@ -54,6 +54,7 @@ router.get('/week/:date', async (req, res) => {
     }
 
     res.json(slots);
+    console.log('Backend: Response sent for slots.');
   } catch (error) {
     console.error('Backend: Server error fetching/initializing slots:', error);
     res.status(500).json({ message: 'Server error' });

@@ -11,6 +11,7 @@ router.get('/', async (req, res) => {
     const dateTitles = await DateTitle.find();
     console.log('Backend: Found', dateTitles.length, 'date titles.');
     res.json(dateTitles);
+    console.log('Backend: Response sent for date titles.');
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');

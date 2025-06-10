@@ -167,6 +167,8 @@ function UserView({ dateTitles, refreshDateTitles }) {
   // State to hold the generated Sundays from Calendar
   const [generatedSundays, setGeneratedSundays] = useState([]);
 
+  console.log('UserView: setGeneratedSundays function =', setGeneratedSundays);
+
   const fetchSlots = async (dateString) => {
     try {
       setIsLoading(true);

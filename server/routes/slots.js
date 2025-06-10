@@ -6,6 +6,7 @@ const { auth, isAdmin } = require('./auth');
 // Get slots for a specific week (auto-initialize if missing)
 router.get('/week/:date', async (req, res) => {
   try {
+    console.log('Backend: Received request for slots for date:', req.params.date);
     const date = new Date(req.params.date);
     // Find the Sunday of the week
     const sunday = new Date(date);

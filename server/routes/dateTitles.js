@@ -6,6 +6,7 @@ const { auth, isAdmin } = require('./auth');
 // Get all date titles
 router.get('/', async (req, res) => {
   try {
+    console.log('Backend: Received request for date titles.');
     const dateTitles = await DateTitle.find();
     res.json(dateTitles);
   } catch (err) {

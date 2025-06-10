@@ -99,6 +99,11 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
     return acc;
   }, {});
 
+  // Debug log for slots and selectedDate
+  console.log('Calendar: slots prop', slots);
+  console.log('Calendar: selectedDate', selectedDate);
+  console.log('Calendar: slotsByDate', slotsByDate);
+
   // Sort dates (now using generated Sunday dates)
   const sortedDates = sundayDates;
 

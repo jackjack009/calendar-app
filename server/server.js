@@ -17,7 +17,9 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:3000',
   'https://calendar-app-two-lovat.vercel.app',  // Remove trailing slash
-  process.env.FRONTEND_URL
+  process.env.FRONTEND_URL,
+  'https://calendar-availability.vercel.app',
+  'https://www.jackjack.cc'
 ].filter(Boolean);
 
 app.use(cors({

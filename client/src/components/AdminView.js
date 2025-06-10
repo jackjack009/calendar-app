@@ -80,8 +80,10 @@ function AdminView({ dateTitles, refreshDateTitles }) {
 
   // Effect to set initial date based on generated Sundays
   useEffect(() => {
+    console.log('AdminView: useEffect for generatedSundays - currentDate:', currentDate, 'generatedSundays:', generatedSundays);
     if (!currentDate && generatedSundays.length > 0) {
       setCurrentDate(generatedSundays[0]);
+      console.log('AdminView: Setting initial currentDate to:', generatedSundays[0]);
     }
   }, [currentDate, generatedSundays]);
 

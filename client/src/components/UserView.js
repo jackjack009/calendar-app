@@ -262,23 +262,23 @@ function UserView({ dateTitles, refreshDateTitles, isLoadingDateTitles }) {
         Lịch để check coi Jack ế show đến đâu. Muốn búc thì nhắm cái nào Available nghen. Iu thương~
       </Typography>
 
-      {(isLoading || isLoadingDateTitles || error) ? (
+      <Calendar
+        slots={slots}
+        dateTitles={dateTitles}
+        onDateTitleUpdate={refreshDateTitles}
+        onDateSelect={handleDateSelect}
+        selectedDate={currentDate}
+        onSundaysGenerated={setGeneratedSundays}
+      />
+      {(isLoading || isLoadingDateTitles) && (
         <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: 200, my: 4 }}>
-          {error ? (
-            <Typography variant="h6" color="error">Error: {error.message || "Failed to load data."}</Typography>
-          ) : (
-            <Typography variant="h6">Loading calendar data...</Typography>
-          )}
+          <Typography variant="h6">Loading calendar data...</Typography>
         </Box>
-      ) : (
-        <Calendar
-          slots={slots}
-          dateTitles={dateTitles}
-          onDateTitleUpdate={refreshDateTitles}
-          onDateSelect={handleDateSelect}
-          selectedDate={currentDate}
-          onSundaysGenerated={setGeneratedSundays}
-        />
+      )}
+      {error && (
+        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: 200, my: 4 }}>
+          <Typography variant="h6" color="error">Error: {error.message || "Failed to load data."}</Typography>
+        </Box>
       )}
 
       <Paper elevation={3} sx={{ p: 3, mt: 4 }}>

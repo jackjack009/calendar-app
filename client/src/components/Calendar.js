@@ -22,7 +22,7 @@ import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, onDateSelect, selectedDate }) {
+function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, onDateSelect, selectedDate, onSundaysGenerated }) {
   const theme = useTheme();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -52,6 +52,12 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
 
   const sundayDates = generateSundays();
   console.log('Calendar: Generated Sunday Dates =', sundayDates);
+
+  useEffect(() => {
+    if (onSundaysGenerated) {
+      onSundaysGenerated(sundayDates);
+    }
+  }, [sundayDates, onSundaysGenerated]);
 
   useEffect(() => {
     const fetchDeletedDates = async () => {

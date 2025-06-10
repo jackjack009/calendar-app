@@ -159,10 +159,13 @@ function FlappyGame() {
 
 function UserView({ dateTitles, refreshDateTitles }) {
   const [slots, setSlots] = useState([]);
-  const [currentDate, setCurrentDate] = useState(getNextSunday(new Date()).toISOString().split('T')[0]);
+  const [currentDate, setCurrentDate] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+
+  // State to hold the generated Sundays from Calendar
+  const [generatedSundays, setGeneratedSundays] = useState([]);
 
   const fetchSlots = async (dateString) => {
     try {
@@ -183,6 +186,13 @@ function UserView({ dateTitles, refreshDateTitles }) {
   useEffect(() => {
     fetchSlots(currentDate);
   }, [currentDate]);
+
+  // Effect to set initial date based on generated Sundays
+  useEffect(() => {
+    if (!currentDate && generatedSundays.length > 0) {
+      setCurrentDate(generatedSundays[0]);
+    }
+  }, [currentDate, generatedSundays]);
 
   const handleDateSelect = (dateKey) => {
     setCurrentDate(dateKey);
@@ -238,6 +248,7 @@ function UserView({ dateTitles, refreshDateTitles }) {
           onDateTitleUpdate={refreshDateTitles} 
           onDateSelect={handleDateSelect}
           selectedDate={currentDate}
+          onSundaysGenerated={setGeneratedSundays}
         />
       )}
 

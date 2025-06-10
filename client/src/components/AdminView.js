@@ -30,12 +30,15 @@ function getNextSunday(date = new Date()) {
 
 function AdminView({ dateTitles, refreshDateTitles }) {
   const [slots, setSlots] = useState([]);
-  const [currentDate, setCurrentDate] = useState(getNextSunday(new Date()).toISOString().split('T')[0]);
+  const [currentDate, setCurrentDate] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+
+  // State to hold the generated Sundays from Calendar
+  const [generatedSundays, setGeneratedSundays] = useState([]);
 
   useEffect(() => {
     if (!user) {
@@ -72,6 +75,13 @@ function AdminView({ dateTitles, refreshDateTitles }) {
     fetchSlots(currentDate);
     refreshDateTitles();
   }, [currentDate, refreshDateTitles]);
+
+  // Effect to set initial date based on generated Sundays
+  useEffect(() => {
+    if (!currentDate && generatedSundays.length > 0) {
+      setCurrentDate(generatedSundays[0]);
+    }
+  }, [currentDate, generatedSundays]);
 
   const handleDateSelect = (dateKey) => {
     setCurrentDate(dateKey);
@@ -168,6 +178,7 @@ function AdminView({ dateTitles, refreshDateTitles }) {
             onDateTitleUpdate={refreshDateTitles}
             onDateSelect={handleDateSelect}
             selectedDate={currentDate}
+            onSundaysGenerated={setGeneratedSundays}
           />
         )}
 

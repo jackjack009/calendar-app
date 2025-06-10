@@ -47,26 +47,41 @@ function AdminView({ dateTitles, refreshDateTitles }) {
   }, [user, navigate]);
 
   const fetchSlots = async (dateString) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const response = await axios.get(
-        `${API_URL}/api/slots/week/${dateString}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
+    const maxRetries = 5;
+    const baseDelay = 1000; // 1 second
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const response = await axios.get(
+          `${API_URL}/api/slots/week/${dateString}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          }
+        );
+        setSlots(response.data);
+        setIsLoading(false);
+        return; // Success, exit the function
+      } catch (error) {
+        console.error(`Error fetching slots (attempt ${attempt + 1}/${maxRetries}):`, error);
+        
+        if (attempt === maxRetries - 1) {
+          // Last attempt failed
+          setError(error);
+          setIsLoading(false);
+          if (error.response?.status === 401) {
+            logout();
+            navigate('/login');
+          }
+          return;
         }
-      );
-      setSlots(response.data);
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error fetching slots:', error);
-      setError(error);
-      setIsLoading(false);
-      if (error.response?.status === 401) {
-        logout();
-        navigate('/login');
+
+        // Calculate delay with exponential backoff
+        const delay = baseDelay * Math.pow(2, attempt);
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
   };

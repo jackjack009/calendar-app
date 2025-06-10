@@ -25,15 +25,31 @@ function App() {
   const [dateTitles, setDateTitles] = useState({});
 
   const fetchDateTitles = useCallback(async () => {
-    try {
-      const response = await axios.get(`${API_URL}/api/date-titles`);
-      const titlesMap = response.data.reduce((acc, item) => {
-        acc[item.date] = item.title;
-        return acc;
-      }, {});
-      setDateTitles(titlesMap);
-    } catch (error) {
-      console.error('Error fetching date titles:', error);
+    const maxRetries = 5;
+    const baseDelay = 1000; // 1 second
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        const response = await axios.get(`${API_URL}/api/date-titles`);
+        const titlesMap = response.data.reduce((acc, item) => {
+          acc[item.date] = item.title;
+          return acc;
+        }, {});
+        setDateTitles(titlesMap);
+        return; // Success, exit the function
+      } catch (error) {
+        console.error(`Error fetching date titles (attempt ${attempt + 1}/${maxRetries}):`, error);
+        
+        if (attempt === maxRetries - 1) {
+          // Last attempt failed
+          console.error('All retry attempts failed');
+          return;
+        }
+
+        // Calculate delay with exponential backoff
+        const delay = baseDelay * Math.pow(2, attempt);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
     }
   }, []);
 

@@ -168,18 +168,33 @@ function UserView({ dateTitles, refreshDateTitles }) {
   const [generatedSundays, setGeneratedSundays] = useState([]);
 
   const fetchSlots = async (dateString) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const response = await axios.get(
-        `${API_URL}/api/slots/week/${dateString}`
-      );
-      setSlots(response.data);
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error fetching slots:', error);
-      setError(error);
-      setIsLoading(false);
+    const maxRetries = 5;
+    const baseDelay = 1000; // 1 second
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const response = await axios.get(
+          `${API_URL}/api/slots/week/${dateString}`
+        );
+        setSlots(response.data);
+        setIsLoading(false);
+        return; // Success, exit the function
+      } catch (error) {
+        console.error(`Error fetching slots (attempt ${attempt + 1}/${maxRetries}):`, error);
+        
+        if (attempt === maxRetries - 1) {
+          // Last attempt failed
+          setError(error);
+          setIsLoading(false);
+          return;
+        }
+
+        // Calculate delay with exponential backoff
+        const delay = baseDelay * Math.pow(2, attempt);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
     }
   };
 

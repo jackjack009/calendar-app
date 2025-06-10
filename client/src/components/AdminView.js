@@ -31,6 +31,8 @@ function getNextSunday(date = new Date()) {
 function AdminView({ dateTitles, refreshDateTitles }) {
   const [slots, setSlots] = useState([]);
   const [currentDate, setCurrentDate] = useState(getNextSunday(new Date()).toISOString().split('T')[0]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -43,6 +45,8 @@ function AdminView({ dateTitles, refreshDateTitles }) {
 
   const fetchSlots = async (dateString) => {
     try {
+      setIsLoading(true);
+      setError(null);
       const response = await axios.get(
         `${API_URL}/api/slots/week/${dateString}`,
         {
@@ -52,8 +56,11 @@ function AdminView({ dateTitles, refreshDateTitles }) {
         }
       );
       setSlots(response.data);
+      setIsLoading(false);
     } catch (error) {
       console.error('Error fetching slots:', error);
+      setError(error);
+      setIsLoading(false);
       if (error.response?.status === 401) {
         logout();
         navigate('/login');
@@ -144,14 +151,24 @@ function AdminView({ dateTitles, refreshDateTitles }) {
           Lịch để check coi Jack ế show đến đâu. Muốn búc thì nhắm cái nào Available nghen. Iu thương~
         </Typography>
 
-        <Calendar 
-          slots={slots} 
-          dateTitles={dateTitles}
-          onSlotClick={handleSlotClick} 
-          isAdmin={true} 
-          onDateTitleUpdate={refreshDateTitles}
-          onDateSelect={handleDateSelect}
-        />
+        {isLoading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 200 }}>
+            <Typography variant="h6">Loading slots...</Typography>
+          </Box>
+        ) : error ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 200 }}>
+            <Typography variant="h6" color="error">Error: {error.message}</Typography>
+          </Box>
+        ) : (
+          <Calendar 
+            slots={slots} 
+            dateTitles={dateTitles}
+            onSlotClick={handleSlotClick} 
+            isAdmin={true} 
+            onDateTitleUpdate={refreshDateTitles}
+            onDateSelect={handleDateSelect}
+          />
+        )}
 
         <Snackbar
           open={notification.open}

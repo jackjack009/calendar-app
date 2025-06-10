@@ -167,6 +167,7 @@ function AdminView({ dateTitles, refreshDateTitles }) {
             isAdmin={true} 
             onDateTitleUpdate={refreshDateTitles}
             onDateSelect={handleDateSelect}
+            selectedDate={currentDate}
           />
         )}
 

@@ -22,14 +22,15 @@ import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, onDateSelect }) {
+function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, onDateSelect, selectedDate }) {
   const theme = useTheme();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [selectedDate, setSelectedDate] = useState(null);
   const [editingDate, setEditingDate] = useState(null);
   const [editedTitle, setEditedTitle] = useState('');
   const [deletedDates, setDeletedDates] = useState([]);
+
+  console.log('Calendar Rendered: selectedDate prop =', selectedDate);
 
   const getNearestSunday = (date) => {
     const result = new Date(date);
@@ -50,15 +51,7 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
   };
 
   const sundayDates = generateSundays();
-
-  useEffect(() => {
-    if (sundayDates.length > 0 && !selectedDate) {
-      setSelectedDate(sundayDates[0]);
-      if (onDateSelect) {
-        onDateSelect(sundayDates[0]);
-      }
-    }
-  }, [sundayDates, selectedDate, onDateSelect]);
+  console.log('Calendar: Generated Sunday Dates =', sundayDates);
 
   useEffect(() => {
     const fetchDeletedDates = async () => {
@@ -106,7 +99,7 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
   const sortedDates = sundayDates;
 
   const handleDateClick = (dateKey) => {
-    setSelectedDate(dateKey);
+    console.log('Calendar: Date clicked =', dateKey);
     if (onDateSelect) {
       onDateSelect(dateKey);
     }
@@ -159,7 +152,7 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
       );
       setDeletedDates(prev => [...prev, dateKey]);
       if (selectedDate === dateKey) {
-        setSelectedDate(null); // Deselect if the deleted date was selected
+        handleDateClick(null);
       }
       if (onDateTitleUpdate) {
         onDateTitleUpdate(); // Notify parent to re-fetch dates (though parent handles slots, not deleted dates)
@@ -181,7 +174,7 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
         }
       );
       setDeletedDates(prev => prev.filter(date => date !== dateKey));
-      setSelectedDate(dateKey);
+      handleDateClick(dateKey);
       if (onDateTitleUpdate) {
         onDateTitleUpdate(); // Notify parent to re-fetch dates
       }
@@ -198,17 +191,12 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
       <Grid item xs={12} md={3}>
         {isMobile ? (
           <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel id="select-date-label">Chọn lịch Fes</InputLabel>
+            <InputLabel id="sunday-select-label">Select Sunday</InputLabel>
             <Select
-              labelId="select-date-label"
+              labelId="sunday-select-label"
               value={selectedDate || ''}
-              label="Chọn lịch Fes"
-              onChange={(e) => {
-                setSelectedDate(e.target.value);
-                if (onDateSelect) {
-                  onDateSelect(e.target.value);
-                }
-              }}
+              label="Select Sunday"
+              onChange={(e) => handleDateClick(e.target.value)}
             >
               {displayedDates.map((dateKey) => (
                 <MenuItem key={dateKey} value={dateKey}>
@@ -329,41 +317,52 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
 
       {/* Slots Grid */}
       <Grid item xs={12} md={9}>
-        {selectedDate && (
-          <Box>
-            <Grid container spacing={2}>
-              {slotsByDate[selectedDate] && slotsByDate[selectedDate].map((slot) => (
-                <Grid item xs={6} sm={6} md={4} lg={3} key={slot._id}>
-                  <Paper
-                    elevation={2}
-                    sx={{
-                      p: 2,
-                      cursor: isAdmin ? 'pointer' : 'default',
-                      bgcolor: slot.isAvailable ? '#e8f5e9' : '#ffebee',
-                      '&:hover': {
-                        bgcolor: isAdmin
-                          ? slot.isAvailable
-                            ? '#c8e6c9'
-                            : '#ffcdd2'
-                          : undefined,
-                      },
-                    }}
-                    onClick={() => isAdmin && onSlotClick(slot)}
+        {selectedDate && slotsByDate[selectedDate] && slotsByDate[selectedDate].length > 0 ? (
+          <Grid container spacing={2}>
+            {slotsByDate[selectedDate].map((slot) => (
+              <Grid item xs={6} sm={6} md={4} lg={3} key={slot._id}>
+                <Paper
+                  elevation={2}
+                  sx={{
+                    p: 2,
+                    cursor: isAdmin ? 'pointer' : 'default',
+                    bgcolor: slot.isAvailable ? '#e8f5e9' : '#ffebee',
+                    '&:hover': {
+                      bgcolor: isAdmin
+                        ? slot.isAvailable
+                          ? '#c8e6c9'
+                          : '#ffcdd2'
+                        : undefined,
+                    },
+                  }}
+                  onClick={() => isAdmin && onSlotClick(slot)}
+                >
+                  <Typography variant="h6" align="center">
+                    {formatTime(slot.hour, slot.slotNumber)}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    align="center"
+                    color={slot.isAvailable ? 'success.main' : 'error.main'}
                   >
-                    <Typography variant="h6" align="center">
-                      {formatTime(slot.hour, slot.slotNumber)}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      align="center"
-                      color={slot.isAvailable ? 'success.main' : 'error.main'}
-                    >
-                      {slot.isAvailable ? 'Available' : 'Unavailable'}
-                    </Typography>
-                  </Paper>
-                </Grid>
-              ))}
-            </Grid>
+                    {slot.isAvailable ? 'Available' : 'Unavailable'}
+                  </Typography>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        ) : selectedDate ? (
+          <Box sx={{ p: 2, textAlign: 'center' }}>
+            <Typography variant="h6">No slots available for this Sunday.</Typography>
+            {isAdmin && (
+              <Typography variant="body2" color="textSecondary">
+                (Slots will be auto-generated by the backend when this Sunday is requested for the first time.)
+              </Typography>
+            )}
+          </Box>
+        ) : (
+          <Box sx={{ p: 2, textAlign: 'center' }}>
+            <Typography variant="h6">Please select a Sunday from the list.</Typography>
           </Box>
         )}
       </Grid>

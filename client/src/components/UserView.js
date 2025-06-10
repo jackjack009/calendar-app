@@ -237,6 +237,7 @@ function UserView({ dateTitles, refreshDateTitles }) {
           dateTitles={dateTitles} 
           onDateTitleUpdate={refreshDateTitles} 
           onDateSelect={handleDateSelect}
+          selectedDate={currentDate}
         />
       )}
 

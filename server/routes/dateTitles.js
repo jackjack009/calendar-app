@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const DateTitle = require('../models/DateTitle');
-const { auth } = require('./auth');
+const { auth, isAdmin } = require('./auth');
 
 // Get all date titles
 router.get('/', async (req, res) => {
@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
 });
 
 // Create or update a date title (Admin only)
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, isAdmin, async (req, res) => {
   const { date, title } = req.body;
   console.log(`Received request to save date title for ${date}: ${title}`);
 

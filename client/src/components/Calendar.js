@@ -12,7 +12,6 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Button,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckIcon from '@mui/icons-material/Check';
@@ -20,14 +19,14 @@ import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import axios from 'axios';
-import { formatDateToYYYYMMDD, createLocalDateFromYYYYMMDD, getSundayOfWeek } from '../utils/dateUtils';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, onDateSelect, selectedDate, onSundaysGenerated }) {
+function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, onDateSelect }) {
   const theme = useTheme();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [selectedDate, setSelectedDate] = useState(null);
   const [editingDate, setEditingDate] = useState(null);
   const [editedTitle, setEditedTitle] = useState('');
   const [deletedDates, setDeletedDates] = useState([]);
@@ -40,13 +39,12 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
 
   const generateSundays = () => {
     const today = new Date();
-    // Find the nearest upcoming Sunday using the utility function
-    const nearestSunday = getSundayOfWeek(today);
+    const nearestSunday = getNearestSunday(today);
     const sundays = [];
     for (let i = 0; i < 20; i++) {
       const nextSunday = new Date(nearestSunday);
       nextSunday.setDate(nearestSunday.getDate() + (i * 7));
-      sundays.push(formatDateToYYYYMMDD(nextSunday));
+      sundays.push(nextSunday.toISOString().split('T')[0]);
     }
     return sundays;
   };
@@ -54,11 +52,13 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
   const sundayDates = generateSundays();
 
   useEffect(() => {
-    console.log('Calendar: calling onSundaysGenerated with', sundayDates);
-    if (onSundaysGenerated) {
-      onSundaysGenerated(sundayDates);
+    if (sundayDates.length > 0 && !selectedDate) {
+      setSelectedDate(sundayDates[0]);
+      if (onDateSelect) {
+        onDateSelect(sundayDates[0]);
+      }
     }
-  }, [sundayDates, onSundaysGenerated]);
+  }, [sundayDates, selectedDate, onDateSelect]);
 
   useEffect(() => {
     const fetchDeletedDates = async () => {
@@ -83,9 +83,7 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
     return `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   };
 
-  const formatDate = (dateString) => {
-    // Ensure the date string is parsed as a local date to avoid timezone issues
-    const date = createLocalDateFromYYYYMMDD(dateString); 
+  const formatDate = (date) => {
     return date.toLocaleDateString('en-US', {
       weekday: 'short',
       month: 'short',
@@ -104,15 +102,11 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
     return acc;
   }, {});
 
-  // Debug log for slots and selectedDate
-  console.log('Calendar: slots prop', slots);
-  console.log('Calendar: selectedDate', selectedDate);
-  console.log('Calendar: slotsByDate', slotsByDate);
-
   // Sort dates (now using generated Sunday dates)
   const sortedDates = sundayDates;
 
   const handleDateClick = (dateKey) => {
+    setSelectedDate(dateKey);
     if (onDateSelect) {
       onDateSelect(dateKey);
     }
@@ -120,7 +114,7 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
 
   const handleEditDateTitle = (dateKey) => {
     setEditingDate(dateKey);
-    setEditedTitle(dateTitles[dateKey] || formatDate(dateKey));
+    setEditedTitle(dateTitles[dateKey] || formatDate(new Date(dateKey)));
   };
 
   const handleSaveDateTitle = async (dateKey, newTitle) => {
@@ -165,7 +159,7 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
       );
       setDeletedDates(prev => [...prev, dateKey]);
       if (selectedDate === dateKey) {
-        handleDateClick(null);
+        setSelectedDate(null); // Deselect if the deleted date was selected
       }
       if (onDateTitleUpdate) {
         onDateTitleUpdate(); // Notify parent to re-fetch dates (though parent handles slots, not deleted dates)
@@ -187,7 +181,7 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
         }
       );
       setDeletedDates(prev => prev.filter(date => date !== dateKey));
-      handleDateClick(dateKey);
+      setSelectedDate(dateKey);
       if (onDateTitleUpdate) {
         onDateTitleUpdate(); // Notify parent to re-fetch dates
       }
@@ -204,21 +198,23 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
       <Grid item xs={12} md={3}>
         {isMobile ? (
           <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel id="sunday-select-label">Select Sunday</InputLabel>
+            <InputLabel id="select-date-label">Chọn lịch Fes</InputLabel>
             <Select
-              labelId="sunday-select-label"
+              labelId="select-date-label"
               value={selectedDate || ''}
-              label="Select Sunday"
-              onChange={(e) => handleDateClick(e.target.value)}
+              label="Chọn lịch Fes"
+              onChange={(e) => {
+                setSelectedDate(e.target.value);
+                if (onDateSelect) {
+                  onDateSelect(e.target.value);
+                }
+              }}
             >
-              {displayedDates.map((dateKey) => {
-                console.log('Calendar: dateKey in MenuItem', dateKey, 'Type:', typeof dateKey); // Debug log
-                return (
-                  <MenuItem key={dateKey} value={dateKey}>
-                    {dateTitles[dateKey] || formatDate(dateKey)}
-                  </MenuItem>
-                );
-              })}
+              {displayedDates.map((dateKey) => (
+                <MenuItem key={dateKey} value={dateKey}>
+                  {dateTitles[dateKey] || formatDate(new Date(dateKey))}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
         ) : (
@@ -265,35 +261,30 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
                     </Box>
                   ) : (
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Typography variant="body1" sx={{ flexGrow: 1 }}>
-                        {dateTitles[dateKey] || formatDate(dateKey)}
+                      <Typography>
+                        {dateTitles[dateKey] || formatDate(new Date(dateKey))}
                       </Typography>
                       {isAdmin && (
-                        <>
+                        <Box>
                           <IconButton
                             size="small"
-                            onClick={() => handleEditDateTitle(dateKey)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditDateTitle(dateKey);
+                            }}
                           >
                             <EditIcon fontSize="small" />
                           </IconButton>
-                          {deletedDates.includes(dateKey) ? (
-                            <IconButton
-                              size="small"
-                              onClick={() => handleAddBackDate(dateKey)}
-                              color="success"
-                            >
-                              <AddCircleIcon fontSize="small" />
-                            </IconButton>
-                          ) : (
-                            <IconButton
-                              size="small"
-                              onClick={() => handleDeleteDate(dateKey)}
-                              color="error"
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
-                          )}
-                        </>
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteDate(dateKey);
+                            }}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
                       )}
                     </Box>
                   )}
@@ -316,7 +307,7 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
                       }}
                     >
                       <Typography sx={{ textDecoration: 'line-through' }}>
-                        {dateTitles[dateKey] || formatDate(dateKey)}
+                        {dateTitles[dateKey] || formatDate(new Date(dateKey))}
                       </Typography>
                       <IconButton
                         size="small"
@@ -338,52 +329,41 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
 
       {/* Slots Grid */}
       <Grid item xs={12} md={9}>
-        {selectedDate && slotsByDate[selectedDate] && slotsByDate[selectedDate].length > 0 ? (
-          <Grid container spacing={2}>
-            {slotsByDate[selectedDate].map((slot) => (
-              <Grid item xs={6} sm={6} md={4} lg={3} key={slot._id}>
-                <Paper
-                  elevation={2}
-                  sx={{
-                    p: 2,
-                    cursor: isAdmin ? 'pointer' : 'default',
-                    bgcolor: slot.isAvailable ? '#e8f5e9' : '#ffebee',
-                    '&:hover': {
-                      bgcolor: isAdmin
-                        ? slot.isAvailable
-                          ? '#c8e6c9'
-                          : '#ffcdd2'
-                        : undefined,
-                    },
-                  }}
-                  onClick={() => isAdmin && onSlotClick(slot)}
-                >
-                  <Typography variant="h6" align="center">
-                    {formatTime(slot.hour, slot.slotNumber)}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    align="center"
-                    color={slot.isAvailable ? 'success.main' : 'error.main'}
+        {selectedDate && (
+          <Box>
+            <Grid container spacing={2}>
+              {slotsByDate[selectedDate] && slotsByDate[selectedDate].map((slot) => (
+                <Grid item xs={6} sm={6} md={4} lg={3} key={slot._id}>
+                  <Paper
+                    elevation={2}
+                    sx={{
+                      p: 2,
+                      cursor: isAdmin ? 'pointer' : 'default',
+                      bgcolor: slot.isAvailable ? '#e8f5e9' : '#ffebee',
+                      '&:hover': {
+                        bgcolor: isAdmin
+                          ? slot.isAvailable
+                            ? '#c8e6c9'
+                            : '#ffcdd2'
+                          : undefined,
+                      },
+                    }}
+                    onClick={() => isAdmin && onSlotClick(slot)}
                   >
-                    {slot.isAvailable ? 'Available' : 'Unavailable'}
-                  </Typography>
-                </Paper>
-              </Grid>
-            ))}
-          </Grid>
-        ) : selectedDate ? (
-          <Box sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6">No slots available for this Sunday.</Typography>
-            {isAdmin && (
-              <Typography variant="body2" color="textSecondary">
-                (Slots will be auto-generated by the backend when this Sunday is requested for the first time.)
-              </Typography>
-            )}
-          </Box>
-        ) : (
-          <Box sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6">Please select a Sunday from the list.</Typography>
+                    <Typography variant="h6" align="center">
+                      {formatTime(slot.hour, slot.slotNumber)}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      align="center"
+                      color={slot.isAvailable ? 'success.main' : 'error.main'}
+                    >
+                      {slot.isAvailable ? 'Available' : 'Unavailable'}
+                    </Typography>
+                  </Paper>
+                </Grid>
+              ))}
+            </Grid>
           </Box>
         )}
       </Grid>

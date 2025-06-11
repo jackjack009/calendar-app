@@ -11,9 +11,20 @@ import {
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import axios from 'axios';
 import Calendar from './Calendar';
-import { formatDateToYYYYMMDD, createLocalDateFromYYYYMMDD, getSundayOfWeek } from '../utils/dateUtils';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
+function getNextSunday(date = new Date()) {
+  const d = new Date(date);
+  const day = d.getDay();
+  if (day === 0) {
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+  d.setDate(d.getDate() + (7 - day));
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
 
 // Simple Flappy Game Component
 function FlappyGame() {
@@ -146,70 +157,31 @@ function FlappyGame() {
   );
 }
 
-function UserView({ dateTitles, refreshDateTitles, isLoadingDateTitles }) {
+function UserView({ dateTitles, refreshDateTitles }) {
   const [slots, setSlots] = useState([]);
-  const [currentDate, setCurrentDate] = useState(null);
+  const [currentDate, setCurrentDate] = useState(getNextSunday(new Date()).toISOString().split('T')[0]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // State to hold the generated Sundays from Calendar
-  const [generatedSundays, setGeneratedSundays] = useState([]);
-
   const fetchSlots = async (dateString) => {
-    const maxRetries = 5;
-    const baseDelay = 1000; // 1 second
-
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const response = await axios.get(
-          `${API_URL}/api/slots/week/${dateString}`
-        );
-        setSlots(response.data);
-        setIsLoading(false);
-        return; // Success, exit the function
-      } catch (error) {
-        console.error(`Error fetching slots (attempt ${attempt + 1}/${maxRetries}):`, error);
-        
-        if (attempt === maxRetries - 1) {
-          // Last attempt failed
-          setError(error);
-          setIsLoading(false);
-          return;
-        }
-
-        // Calculate delay with exponential backoff
-        const delay = baseDelay * Math.pow(2, attempt);
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await axios.get(
+        `${API_URL}/api/slots/week/${dateString}`
+      );
+      setSlots(response.data);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error fetching slots:', error);
+      setError(error);
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    console.log('generatedSundays:', generatedSundays);
-    console.log('currentDate:', currentDate);
-    if (!currentDate && generatedSundays.length > 0) {
-      setCurrentDate(generatedSundays[0]);
-    }
-    // Fallback: if generatedSundays is empty after 5 seconds, stop loading
-    if (generatedSundays.length === 0) {
-      const timeout = setTimeout(() => {
-        if (isLoading) {
-          setIsLoading(false);
-          setError(new Error('No Sundays generated.'));
-        }
-      }, 5000);
-      return () => clearTimeout(timeout);
-    }
-  }, [currentDate, generatedSundays]);
-
-  useEffect(() => {
-    console.log('currentDate changed:', currentDate);
-    if (currentDate) {
-      fetchSlots(currentDate);
-    }
+    fetchSlots(currentDate);
   }, [currentDate]);
 
   const handleDateSelect = (dateKey) => {
@@ -217,15 +189,15 @@ function UserView({ dateTitles, refreshDateTitles, isLoadingDateTitles }) {
   };
 
   const handlePreviousWeek = () => {
-    const newDate = createLocalDateFromYYYYMMDD(currentDate);
+    const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() - 7);
-    setCurrentDate(formatDateToYYYYMMDD(newDate));
+    setCurrentDate(getNextSunday(newDate).toISOString().split('T')[0]);
   };
 
   const handleNextWeek = () => {
-    const newDate = createLocalDateFromYYYYMMDD(currentDate);
+    const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() + 7);
-    setCurrentDate(formatDateToYYYYMMDD(newDate));
+    setCurrentDate(getNextSunday(newDate).toISOString().split('T')[0]);
   };
 
   const formatDate = (date) => {
@@ -237,10 +209,8 @@ function UserView({ dateTitles, refreshDateTitles, isLoadingDateTitles }) {
     });
   };
 
-  // Compare current date with the first generated Sunday (which is the nearest upcoming Sunday)
-  const isPreviousWeekDisabled = currentDate && generatedSundays.length > 0 && 
-                                 createLocalDateFromYYYYMMDD(currentDate).getTime() <=
-                                 createLocalDateFromYYYYMMDD(generatedSundays[0]).getTime();
+  // Helper to check if previous week is allowed
+  const isPreviousWeekDisabled = new Date(currentDate) <= getNextSunday(new Date());
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
@@ -253,29 +223,17 @@ function UserView({ dateTitles, refreshDateTitles, isLoadingDateTitles }) {
         Lịch để check coi Jack ế show đến đâu. Muốn búc thì nhắm cái nào Available nghen. Iu thương~
       </Typography>
 
-      <Calendar
-        slots={slots}
-        dateTitles={dateTitles}
-        onDateTitleUpdate={refreshDateTitles}
+      <Calendar 
+        slots={slots} 
+        dateTitles={dateTitles} 
+        onDateTitleUpdate={refreshDateTitles} 
         onDateSelect={handleDateSelect}
-        selectedDate={currentDate}
-        onSundaysGenerated={setGeneratedSundays}
       />
-      {(isLoading || isLoadingDateTitles) && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: 200, my: 4 }}>
-          <Typography variant="h6">Loading calendar data...</Typography>
-        </Box>
-      )}
-      {error && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: 200, my: 4 }}>
-          <Typography variant="h6" color="error">Error: {error.message || "Failed to load data."}</Typography>
-        </Box>
-      )}
 
-      <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
+      <Paper elevation={3} sx={{ p: 3, mt: 4, textAlign: 'center' }}>
         <Typography variant="h5" gutterBottom>
-          {isLoading || error ?
-            "Lịch chưa load xong? Nhún nhún con chim tí rồi đợi nó refresh lại nha" :
+          {isLoading || error ? 
+            "Lịch chưa load xong? Nhún nhún con chim tí rồi đợi nó refresh lại nha" : 
             "Bực mình vì mất slot? Nhún chim đi cho nó bực thêm"}
         </Typography>
         <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
@@ -295,4 +253,5 @@ function UserView({ dateTitles, refreshDateTitles, isLoadingDateTitles }) {
   );
 }
 
-export default UserView;
+export default UserView; 
+ 

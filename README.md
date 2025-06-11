@@ -63,6 +63,11 @@ calendar-app/
    npm start
    ```
 
+## Default Admin Credentials
+
+- Username: jackjack
+- Password: Idontknow0!
+
 ## License
 
 MIT 

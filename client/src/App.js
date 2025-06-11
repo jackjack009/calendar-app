@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -23,43 +23,23 @@ const theme = createTheme({
 
 function App() {
   const [dateTitles, setDateTitles] = useState({});
-  const [isLoadingDateTitles, setIsLoadingDateTitles] = useState(true);
 
-  const fetchDateTitles = useCallback(async () => {
-    const maxRetries = 5;
-    const baseDelay = 1000; // 1 second
-
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        setIsLoadingDateTitles(true);
-        const response = await axios.get(`${API_URL}/api/date-titles`);
-        const titlesMap = response.data.reduce((acc, item) => {
-          acc[item.date] = item.title;
-          return acc;
-        }, {});
-        setDateTitles(titlesMap);
-        setIsLoadingDateTitles(false);
-        return; // Success, exit the function
-      } catch (error) {
-        console.error(`Error fetching date titles (attempt ${attempt + 1}/${maxRetries}):`, error);
-        
-        if (attempt === maxRetries - 1) {
-          // Last attempt failed
-          console.error('All retry attempts failed');
-          setIsLoadingDateTitles(false);
-          return;
-        }
-
-        // Calculate delay with exponential backoff
-        const delay = baseDelay * Math.pow(2, attempt);
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
+  const fetchDateTitles = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/date-titles`);
+      const titlesMap = response.data.reduce((acc, item) => {
+        acc[item.date] = item.title;
+        return acc;
+      }, {});
+      setDateTitles(titlesMap);
+    } catch (error) {
+      console.error('Error fetching date titles:', error);
     }
-  }, []);
+  };
 
   useEffect(() => {
     fetchDateTitles();
-  }, [fetchDateTitles]);
+  }, []);
 
   return (
     <ThemeProvider theme={theme}>
@@ -67,8 +47,8 @@ function App() {
       <AuthProvider>
         <Router>
           <Routes>
-            <Route path="/" element={<UserView dateTitles={dateTitles} refreshDateTitles={fetchDateTitles} isLoadingDateTitles={isLoadingDateTitles} />} />
-            <Route path="/admin" element={<AdminView dateTitles={dateTitles} refreshDateTitles={fetchDateTitles} isLoadingDateTitles={isLoadingDateTitles} />} />
+            <Route path="/" element={<UserView dateTitles={dateTitles} refreshDateTitles={fetchDateTitles} />} />
+            <Route path="/admin" element={<AdminView dateTitles={dateTitles} refreshDateTitles={fetchDateTitles} />} />
             <Route path="/login" element={<Login />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

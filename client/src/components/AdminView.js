@@ -13,21 +13,27 @@ import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import axios from 'axios';
 import Calendar from './Calendar';
 import { useAuth } from '../contexts/AuthContext';
-import { formatDateToYYYYMMDD, createLocalDateFromYYYYMMDD, getSundayOfWeek } from '../utils/dateUtils';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-function AdminView({ dateTitles, refreshDateTitles, isLoadingDateTitles }) {
+function getNextSunday(date = new Date()) {
+  const d = new Date(date);
+  const day = d.getDay();
+  if (day === 0) {
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+  d.setDate(d.getDate() + (7 - day));
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function AdminView({ dateTitles, refreshDateTitles }) {
   const [slots, setSlots] = useState([]);
-  const [currentDate, setCurrentDate] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [currentDate, setCurrentDate] = useState(getNextSunday(new Date()).toISOString().split('T')[0]);
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-
-  // State to hold the generated Sundays from Calendar
-  const [generatedSundays, setGeneratedSundays] = useState([]);
 
   useEffect(() => {
     if (!user) {
@@ -36,58 +42,29 @@ function AdminView({ dateTitles, refreshDateTitles, isLoadingDateTitles }) {
   }, [user, navigate]);
 
   const fetchSlots = async (dateString) => {
-    const maxRetries = 5;
-    const baseDelay = 1000; // 1 second
-
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const response = await axios.get(
-          `${API_URL}/api/slots/week/${dateString}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          }
-        );
-        setSlots(response.data);
-        setIsLoading(false);
-        return; // Success, exit the function
-      } catch (error) {
-        console.error(`Error fetching slots (attempt ${attempt + 1}/${maxRetries}):`, error);
-        
-        if (attempt === maxRetries - 1) {
-          // Last attempt failed
-          setError(error);
-          setIsLoading(false);
-          if (error.response?.status === 401) {
-            logout();
-            navigate('/login');
-          }
-          return;
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/slots/week/${dateString}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
         }
-
-        // Calculate delay with exponential backoff
-        const delay = baseDelay * Math.pow(2, attempt);
-        await new Promise(resolve => setTimeout(resolve, delay));
+      );
+      setSlots(response.data);
+    } catch (error) {
+      console.error('Error fetching slots:', error);
+      if (error.response?.status === 401) {
+        logout();
+        navigate('/login');
       }
     }
   };
 
   useEffect(() => {
-    if (currentDate) {
-      fetchSlots(currentDate);
-      refreshDateTitles();
-    }
+    fetchSlots(currentDate);
+    refreshDateTitles();
   }, [currentDate, refreshDateTitles]);
-
-  // Effect to set initial date based on generated Sundays
-  useEffect(() => {
-    if (!currentDate && generatedSundays.length > 0) {
-      setCurrentDate(generatedSundays[0]);
-    }
-  }, [currentDate, generatedSundays]);
 
   const handleDateSelect = (dateKey) => {
     setCurrentDate(dateKey);
@@ -121,15 +98,15 @@ function AdminView({ dateTitles, refreshDateTitles, isLoadingDateTitles }) {
   };
 
   const handlePreviousWeek = () => {
-    const newDate = createLocalDateFromYYYYMMDD(currentDate); 
+    const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() - 7);
-    setCurrentDate(formatDateToYYYYMMDD(newDate));
+    setCurrentDate(getNextSunday(newDate).toISOString().split('T')[0]);
   };
 
   const handleNextWeek = () => {
-    const newDate = createLocalDateFromYYYYMMDD(currentDate); 
+    const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() + 7);
-    setCurrentDate(formatDateToYYYYMMDD(newDate));
+    setCurrentDate(getNextSunday(newDate).toISOString().split('T')[0]);
   };
 
   const formatDate = (date) => {
@@ -145,10 +122,7 @@ function AdminView({ dateTitles, refreshDateTitles, isLoadingDateTitles }) {
     setNotification({ ...notification, open: false });
   };
 
-  // Compare current date with the first generated Sunday (which is the nearest upcoming Sunday)
-  const isPreviousWeekDisabled = currentDate && generatedSundays.length > 0 && 
-                                 createLocalDateFromYYYYMMDD(currentDate).getTime() <=
-                                 createLocalDateFromYYYYMMDD(generatedSundays[0]).getTime();
+  const isPreviousWeekDisabled = new Date(currentDate) <= getNextSunday(new Date());
 
   return (
     <Container maxWidth="lg">
@@ -170,26 +144,14 @@ function AdminView({ dateTitles, refreshDateTitles, isLoadingDateTitles }) {
           Lịch để check coi Jack ế show đến đâu. Muốn búc thì nhắm cái nào Available nghen. Iu thương~
         </Typography>
 
-        {(isLoading || isLoadingDateTitles || error) ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: 200, my: 4 }}>
-            {error ? (
-              <Typography variant="h6" color="error">Error: {error.message || "Failed to load data."}</Typography>
-            ) : (
-              <Typography variant="h6">Loading calendar data...</Typography>
-            )}
-          </Box>
-        ) : (
-          <Calendar 
-            slots={slots} 
-            dateTitles={dateTitles}
-            onSlotClick={handleSlotClick} 
-            isAdmin={true} 
-            onDateTitleUpdate={refreshDateTitles}
-            onDateSelect={handleDateSelect}
-            selectedDate={currentDate}
-            onSundaysGenerated={setGeneratedSundays}
-          />
-        )}
+        <Calendar 
+          slots={slots} 
+          dateTitles={dateTitles}
+          onSlotClick={handleSlotClick} 
+          isAdmin={true} 
+          onDateTitleUpdate={refreshDateTitles}
+          onDateSelect={handleDateSelect}
+        />
 
         <Snackbar
           open={notification.open}

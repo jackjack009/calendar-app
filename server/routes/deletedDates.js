@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const DeletedDate = require('../models/DeletedDate');
-const { auth, isAdmin } = require('./auth');
+const { auth } = require('./auth');
 
 // Get all deleted dates
 router.get('/', async (req, res) => {
@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
 });
 
 // Add a date to deleted list (Admin only)
-router.post('/', auth, isAdmin, async (req, res) => {
+router.post('/', auth, async (req, res) => {
   const { date } = req.body;
 
   try {
@@ -38,7 +38,7 @@ router.post('/', auth, isAdmin, async (req, res) => {
 });
 
 // Remove a date from deleted list (Admin only)
-router.delete('/:date', auth, isAdmin, async (req, res) => {
+router.delete('/:date', auth, async (req, res) => {
   try {
     const date = req.params.date;
     const result = await DeletedDate.deleteOne({ date });

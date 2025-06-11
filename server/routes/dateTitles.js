@@ -1,17 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const DateTitle = require('../models/DateTitle');
-const { auth, isAdmin } = require('./auth');
+const { auth } = require('./auth');
 
 // Get all date titles
 router.get('/', async (req, res) => {
   try {
-    console.log('Backend: Received request for date titles.');
-    console.log('Backend: Attempting to find date titles...');
     const dateTitles = await DateTitle.find();
-    console.log('Backend: Found', dateTitles.length, 'date titles.');
     res.json(dateTitles);
-    console.log('Backend: Response sent for date titles.');
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -19,7 +15,7 @@ router.get('/', async (req, res) => {
 });
 
 // Create or update a date title (Admin only)
-router.post('/', auth, isAdmin, async (req, res) => {
+router.post('/', auth, async (req, res) => {
   const { date, title } = req.body;
   console.log(`Received request to save date title for ${date}: ${title}`);
 

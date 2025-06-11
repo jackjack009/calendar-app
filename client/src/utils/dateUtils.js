@@ -6,6 +6,11 @@ export const formatDateToYYYYMMDD = (date) => {
 };
 
 export const createLocalDateFromYYYYMMDD = (dateString) => {
+  if (typeof dateString !== 'string') {
+    console.error('createLocalDateFromYYYYMMDD received non-string input:', dateString, 'Type:', typeof dateString);
+    // Return a default invalid date or throw an error to prevent further issues
+    return new Date(NaN); // Or throw new Error("Invalid date string provided");
+  }
   const [year, month, day] = dateString.split('-').map(Number);
   // Month is 0-indexed in JavaScript Date constructor
   const date = new Date(year, month - 1, day);

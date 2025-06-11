@@ -12,6 +12,7 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Button,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckIcon from '@mui/icons-material/Check';
@@ -119,7 +120,7 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
 
   const handleEditDateTitle = (dateKey) => {
     setEditingDate(dateKey);
-    setEditedTitle(dateTitles[dateKey] || formatDate(new Date(dateKey)));
+    setEditedTitle(dateTitles[dateKey] || formatDate(dateKey));
   };
 
   const handleSaveDateTitle = async (dateKey, newTitle) => {
@@ -210,11 +211,14 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
               label="Select Sunday"
               onChange={(e) => handleDateClick(e.target.value)}
             >
-              {displayedDates.map((dateKey) => (
-                <MenuItem key={dateKey} value={dateKey}>
-                  {dateTitles[dateKey] || formatDate(new Date(dateKey))}
-                </MenuItem>
-              ))}
+              {displayedDates.map((dateKey) => {
+                console.log('Calendar: dateKey in MenuItem', dateKey, 'Type:', typeof dateKey); // Debug log
+                return (
+                  <MenuItem key={dateKey} value={dateKey}>
+                    {dateTitles[dateKey] || formatDate(dateKey)}
+                  </MenuItem>
+                );
+              })}
             </Select>
           </FormControl>
         ) : (
@@ -261,30 +265,35 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
                     </Box>
                   ) : (
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Typography>
-                        {dateTitles[dateKey] || formatDate(new Date(dateKey))}
+                      <Typography variant="body1" sx={{ flexGrow: 1 }}>
+                        {dateTitles[dateKey] || formatDate(dateKey)}
                       </Typography>
                       {isAdmin && (
-                        <Box>
+                        <>
                           <IconButton
                             size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditDateTitle(dateKey);
-                            }}
+                            onClick={() => handleEditDateTitle(dateKey)}
                           >
                             <EditIcon fontSize="small" />
                           </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteDate(dateKey);
-                            }}
-                          >
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </Box>
+                          {deletedDates.includes(dateKey) ? (
+                            <IconButton
+                              size="small"
+                              onClick={() => handleAddBackDate(dateKey)}
+                              color="success"
+                            >
+                              <AddCircleIcon fontSize="small" />
+                            </IconButton>
+                          ) : (
+                            <IconButton
+                              size="small"
+                              onClick={() => handleDeleteDate(dateKey)}
+                              color="error"
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          )}
+                        </>
                       )}
                     </Box>
                   )}
@@ -307,7 +316,7 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
                       }}
                     >
                       <Typography sx={{ textDecoration: 'line-through' }}>
-                        {dateTitles[dateKey] || formatDate(new Date(dateKey))}
+                        {dateTitles[dateKey] || formatDate(dateKey)}
                       </Typography>
                       <IconButton
                         size="small"

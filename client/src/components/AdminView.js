@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -49,7 +49,7 @@ function AdminView({ dateTitles, refreshDateTitles }) {
     }
   }, [user, navigate]);
 
-  const fetchSlots = async (dateString) => {
+  const fetchSlots = useCallback(async (dateString) => {
     try {
       const response = await axios.get(
         `${API_URL}/api/slots/week/${dateString}`,
@@ -67,12 +67,15 @@ function AdminView({ dateTitles, refreshDateTitles }) {
         navigate('/login');
       }
     }
-  };
+  }, [logout, navigate]);
 
   useEffect(() => {
     fetchSlots(currentDate);
+  }, [currentDate, fetchSlots]);
+
+  useEffect(() => {
     refreshDateTitles();
-  }, [currentDate, refreshDateTitles]);
+  }, [refreshDateTitles]);
 
   const handleDateSelect = (dateKey) => {
     setCurrentDate(dateKey);

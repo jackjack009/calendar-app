@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -172,7 +172,7 @@ function UserView({ dateTitles, refreshDateTitles }) {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const fetchSlots = async (dateString) => {
+  const fetchSlots = useCallback(async (dateString) => {
     try {
       setIsLoading(true);
       setError(null);
@@ -186,11 +186,11 @@ function UserView({ dateTitles, refreshDateTitles }) {
       setError(error);
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchSlots(currentDate);
-  }, [currentDate]);
+  }, [currentDate, fetchSlots]);
 
   const handleDateSelect = (dateKey) => {
     setCurrentDate(dateKey);

@@ -6,11 +6,13 @@ const { auth, isAdmin } = require('./auth');
 // Get slots for a specific week (auto-initialize if missing)
 router.get('/week/:date', async (req, res) => {
   try {
-    const date = new Date(req.params.date);
+    // Ensure the date string is interpreted as UTC to avoid timezone issues
+    const dateParam = req.params.date + 'T00:00:00.000Z';
+    const date = new Date(dateParam);
     // Find the Sunday of the week
     const sunday = new Date(date);
-    sunday.setDate(date.getDate() - date.getDay());
-    sunday.setHours(0, 0, 0, 0);
+    sunday.setUTCHours(0, 0, 0, 0);
+    sunday.setUTCDate(date.getUTCDate() - date.getUTCDay());
 
     // Find all slots for this Sunday
     let slots = await TimeSlot.find({
@@ -26,7 +28,7 @@ router.get('/week/:date', async (req, res) => {
       for (let hour = 10; hour <= 17; hour++) {
         for (let slotNumber = 0; slotNumber < 4; slotNumber++) {
           const slotDate = new Date(sunday);
-          slotDate.setHours(hour, slotNumber * 15, 0, 0);
+          slotDate.setUTCHours(hour, slotNumber * 15, 0, 0);
           newSlots.push({
             date: slotDate,
             hour,
@@ -58,10 +60,11 @@ router.get('/', async (req, res) => {
     if (!date) {
       return res.status(400).json({ message: 'Missing date parameter' });
     }
-    const target = new Date(date);
-    target.setHours(0, 0, 0, 0);
+    // Ensure the date string is interpreted as UTC to avoid timezone issues
+    const target = new Date(date + 'T00:00:00.000Z');
+    target.setUTCHours(0, 0, 0, 0);
     const nextDay = new Date(target);
-    nextDay.setDate(target.getDate() + 1);
+    nextDay.setUTCDate(target.getUTCDate() + 1);
     const slots = await TimeSlot.find({
       date: {
         $gte: target,
@@ -95,14 +98,16 @@ router.patch('/:id', auth, isAdmin, async (req, res) => {
 router.post('/initialize', auth, isAdmin, async (req, res) => {
   try {
     const { startDate } = req.body;
-    const date = new Date(startDate);
+    // Ensure the date string is interpreted as UTC to avoid timezone issues
+    const date = new Date(startDate + 'T00:00:00.000Z');
+    date.setUTCHours(0, 0, 0, 0);
     const slots = [];
 
     // Create slots for Sunday only
     for (let hour = 10; hour <= 17; hour++) {
       for (let slotNumber = 0; slotNumber < 4; slotNumber++) {
         const slotDate = new Date(date);
-        slotDate.setHours(hour, slotNumber * 15, 0, 0);
+        slotDate.setUTCHours(hour, slotNumber * 15, 0, 0);
         
         slots.push({
           date: slotDate,

@@ -28,9 +28,17 @@ function getNextSunday(date = new Date()) {
   return d;
 }
 
+// Helper to format date to YYYY-MM-DD to avoid timezone issues
+const formatDateToYYYYMMDD = (date) => {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 function AdminView({ dateTitles, refreshDateTitles }) {
   const [slots, setSlots] = useState([]);
-  const [currentDate, setCurrentDate] = useState(getNextSunday(new Date()).toISOString().split('T')[0]);
+  const [currentDate, setCurrentDate] = useState(formatDateToYYYYMMDD(getNextSunday(new Date())));
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -100,13 +108,13 @@ function AdminView({ dateTitles, refreshDateTitles }) {
   const handlePreviousWeek = () => {
     const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() - 7);
-    setCurrentDate(getNextSunday(newDate).toISOString().split('T')[0]);
+    setCurrentDate(formatDateToYYYYMMDD(getNextSunday(newDate)));
   };
 
   const handleNextWeek = () => {
     const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() + 7);
-    setCurrentDate(getNextSunday(newDate).toISOString().split('T')[0]);
+    setCurrentDate(formatDateToYYYYMMDD(getNextSunday(newDate)));
   };
 
   const formatDate = (date) => {

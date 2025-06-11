@@ -44,7 +44,11 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
     for (let i = 0; i < 20; i++) {
       const nextSunday = new Date(nearestSunday);
       nextSunday.setDate(nearestSunday.getDate() + (i * 7));
-      sundays.push(nextSunday.toISOString().split('T')[0]);
+      // Manually construct YYYY-MM-DD to avoid timezone issues with toISOString
+      const year = nextSunday.getFullYear();
+      const month = (nextSunday.getMonth() + 1).toString().padStart(2, '0');
+      const day = nextSunday.getDate().toString().padStart(2, '0');
+      sundays.push(`${year}-${month}-${day}`);
     }
     return sundays;
   };

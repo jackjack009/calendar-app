@@ -19,6 +19,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import axios from 'axios';
+import { formatDateToYYYYMMDD, createLocalDateFromYYYYMMDD, getSundayOfWeek } from '../utils/dateUtils';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -38,15 +39,13 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
 
   const generateSundays = () => {
     const today = new Date();
-    // Find the next Sunday (not Saturday)
-    const nearestSunday = new Date(today);
-    nearestSunday.setDate(today.getDate() + ((7 - today.getDay()) % 7));
-    nearestSunday.setHours(0, 0, 0, 0);
+    // Find the nearest upcoming Sunday using the utility function
+    const nearestSunday = getSundayOfWeek(today);
     const sundays = [];
     for (let i = 0; i < 20; i++) {
       const nextSunday = new Date(nearestSunday);
       nextSunday.setDate(nearestSunday.getDate() + (i * 7));
-      sundays.push(nextSunday.toISOString().split('T')[0]);
+      sundays.push(formatDateToYYYYMMDD(nextSunday));
     }
     return sundays;
   };
@@ -83,7 +82,9 @@ function Calendar({ slots, onSlotClick, isAdmin, dateTitles, onDateTitleUpdate, 
     return `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   };
 
-  const formatDate = (date) => {
+  const formatDate = (dateString) => {
+    // Ensure the date string is parsed as a local date to avoid timezone issues
+    const date = createLocalDateFromYYYYMMDD(dateString); 
     return date.toLocaleDateString('en-US', {
       weekday: 'short',
       month: 'short',

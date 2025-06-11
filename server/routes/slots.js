@@ -7,7 +7,8 @@ const { auth, isAdmin } = require('./auth');
 router.get('/week/:date', async (req, res) => {
   try {
     console.log('Backend: Received request for slots for date:', req.params.date);
-    const date = new Date(req.params.date);
+    // Parse the date string as a local date to avoid timezone shifts
+    const date = new Date(req.params.date + 'T00:00:00');
     // Find the Sunday of the week
     const sunday = new Date(date);
     sunday.setDate(date.getDate() - date.getDay());
@@ -68,7 +69,8 @@ router.get('/', async (req, res) => {
     if (!date) {
       return res.status(400).json({ message: 'Missing date parameter' });
     }
-    const target = new Date(date);
+    // Parse the date string as a local date to avoid timezone shifts
+    const target = new Date(date + 'T00:00:00');
     target.setHours(0, 0, 0, 0);
     const nextDay = new Date(target);
     nextDay.setDate(target.getDate() + 1);

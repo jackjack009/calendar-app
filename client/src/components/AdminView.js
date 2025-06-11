@@ -13,20 +13,9 @@ import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import axios from 'axios';
 import Calendar from './Calendar';
 import { useAuth } from '../contexts/AuthContext';
+import { formatDateToYYYYMMDD, createLocalDateFromYYYYMMDD, getSundayOfWeek } from '../utils/dateUtils';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-
-function getNextSunday(date = new Date()) {
-  const d = new Date(date);
-  const day = d.getDay();
-  if (day === 0) {
-    d.setHours(0, 0, 0, 0);
-    return d;
-  }
-  d.setDate(d.getDate() + (7 - day));
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
 
 function AdminView({ dateTitles, refreshDateTitles, isLoadingDateTitles }) {
   const [slots, setSlots] = useState([]);
@@ -132,15 +121,15 @@ function AdminView({ dateTitles, refreshDateTitles, isLoadingDateTitles }) {
   };
 
   const handlePreviousWeek = () => {
-    const newDate = new Date(currentDate);
+    const newDate = createLocalDateFromYYYYMMDD(currentDate); 
     newDate.setDate(newDate.getDate() - 7);
-    setCurrentDate(getNextSunday(newDate).toISOString().split('T')[0]);
+    setCurrentDate(formatDateToYYYYMMDD(newDate));
   };
 
   const handleNextWeek = () => {
-    const newDate = new Date(currentDate);
+    const newDate = createLocalDateFromYYYYMMDD(currentDate); 
     newDate.setDate(newDate.getDate() + 7);
-    setCurrentDate(getNextSunday(newDate).toISOString().split('T')[0]);
+    setCurrentDate(formatDateToYYYYMMDD(newDate));
   };
 
   const formatDate = (date) => {
@@ -156,7 +145,10 @@ function AdminView({ dateTitles, refreshDateTitles, isLoadingDateTitles }) {
     setNotification({ ...notification, open: false });
   };
 
-  const isPreviousWeekDisabled = new Date(currentDate) <= getNextSunday(new Date());
+  // Compare current date with the first generated Sunday (which is the nearest upcoming Sunday)
+  const isPreviousWeekDisabled = currentDate && generatedSundays.length > 0 && 
+                                 createLocalDateFromYYYYMMDD(currentDate).getTime() <=
+                                 createLocalDateFromYYYYMMDD(generatedSundays[0]).getTime();
 
   return (
     <Container maxWidth="lg">
